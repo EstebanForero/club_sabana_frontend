@@ -58,7 +58,13 @@ export interface OnLogInInfo {
 export async function registerUser(user: UserCreation): Promise<void> {
   await fetchJson(`${BASE_URL}/register`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(user),
+  });
+}
+
+export async function updateUser(user: UserCreation, userId: string): Promise<void> {
+  await fetchJson(`${BASE_URL}/update/${userId}`, {
+    method: 'PUT',
     body: JSON.stringify(user),
   });
 }
@@ -66,7 +72,6 @@ export async function registerUser(user: UserCreation): Promise<void> {
 export async function logInUser(logInInfo: UserLogInInfo): Promise<OnLogInInfo> {
   return fetchJson<OnLogInInfo>(`${BASE_URL}/logIn`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(logInInfo),
   });
 }

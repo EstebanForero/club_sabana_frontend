@@ -1,4 +1,4 @@
-import { start_url, Uuid } from './common';
+import { BASE_URL, start_url, Uuid } from './common';
 import { fetchJson } from './utils';
 
 export interface Request {
@@ -15,8 +15,6 @@ export interface RequestCreation {
   requested_command: string;
   justification: string;
 }
-
-const BASE_URL = `${start_url}/requests`;
 
 export async function createRequest(request: RequestCreation): Promise<void> {
   await fetchJson(`${BASE_URL}`, {

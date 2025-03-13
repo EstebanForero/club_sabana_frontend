@@ -1,4 +1,4 @@
-import { start_url, Uuid } from './common';
+import { BASE_URL, start_url, Uuid } from './common';
 import { fetchJson } from './utils';
 
 export interface Tuition {
@@ -7,8 +7,6 @@ export interface Tuition {
   amount: number;
   payment_date: string; // YYYY-MM-DD HH:MM:SS
 }
-
-const BASE_URL = `${start_url}/tuitions`;
 
 export async function payTuition(amount: number, token: string): Promise<void> {
   await fetchJson(`${BASE_URL}/pay/${amount}`, {

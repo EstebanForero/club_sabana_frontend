@@ -1,4 +1,4 @@
-import { Uuid, LevelName, start_url } from './common';
+import { Uuid, LevelName, start_url, BASE_URL } from './common';
 import { fetchJson } from './utils';
 
 export interface Category {
@@ -30,8 +30,6 @@ export interface UserCategory {
   id_category: Uuid;
   user_level: LevelName;
 }
-
-const BASE_URL = `${start_url}/categories`;
 
 export async function createCategory(category: CategoryCreation): Promise<void> {
   await fetchJson(`${BASE_URL}`, {

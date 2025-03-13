@@ -1,4 +1,4 @@
-import { start_url, Uuid } from './common';
+import { BASE_URL, start_url, Uuid } from './common';
 import { fetchJson } from './utils';
 
 export interface Training {
@@ -25,8 +25,6 @@ export interface TrainingRegistration {
   attended: boolean;
   attendance_datetime: string;   // YYYY-MM-DD HH:MM:SS
 }
-
-const BASE_URL = `${start_url}/trainings`;
 
 export async function createTraining(training: TrainingCreation): Promise<void> {
   await fetchJson(`${BASE_URL}`, {

@@ -4,5 +4,16 @@ export async function fetchJson<T>(url: string, options: RequestInit = {}): Prom
     const errorText = await response.text();
     throw new Error(errorText);
   }
-  return response.json();
+
+  let jsonResponse;
+
+  try {
+    jsonResponse = await response.json()
+  } catch (error) {
+    console.log("Catching error")
+  }
+
+  console.log(`The json response is: ${jsonResponse}`)
+
+  return jsonResponse
 }

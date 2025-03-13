@@ -1,4 +1,4 @@
-import { Uuid, IdType, URol, start_url } from './common';
+import { Uuid, IdType, URol, start_url, BASE_URL } from './common';
 import { fetchJson } from './utils';
 
 export interface User {
@@ -49,10 +49,8 @@ export interface UserLogInInfo {
   password: string;
 }
 
-const BASE_URL = `${start_url}/users`;
-
 export async function registerUser(user: UserCreation): Promise<void> {
-  await fetchJson('/register', {
+  await fetchJson(`${BASE_URL}/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(user),
@@ -60,7 +58,7 @@ export async function registerUser(user: UserCreation): Promise<void> {
 }
 
 export async function logInUser(logInInfo: UserLogInInfo): Promise<{ token: string; user_rol: URol }> {
-  return fetchJson<{ token: string; user_rol: URol }>('/logIn', {
+  return fetchJson<{ token: string; user_rol: URol }>(`${BASE_URL}/logIn`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(logInInfo),

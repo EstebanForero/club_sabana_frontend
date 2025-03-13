@@ -1,6 +1,6 @@
 export type Uuid = string;
 
-export const start_url = 'localhost:8004'
+export const BASE_URL = 'http://127.0.0.1:8004'
 
 export enum LevelName {
   BEGINNER = "BEGGINER",

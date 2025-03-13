@@ -1,4 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { AppSidebar, SidebarLink } from '@/components/AppSideBar';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { CreditCard, Home } from 'lucide-react';
 
 export const Route = createFileRoute('/dashboard_user')({
   component: RouteComponent,
@@ -6,10 +9,14 @@ export const Route = createFileRoute('/dashboard_user')({
 
 const sidebarLinks: SidebarLink[] = [
   { icon: Home, text: "Home", to: "/" },
-  { icon: Mail, text: "Inbox", to: "/inbox" },
-  { icon: Calendar, text: "Calendar", to: "/calendar" },
+  { icon: CreditCard, text: "Tuition", to: "/dashboard_user/tuition" },
 ];
 
 function RouteComponent() {
-  return <div>Hello "/dashboard_user"!</div>
+  return (
+    <SidebarProvider>
+      <AppSidebar links={sidebarLinks} />
+      <Outlet />
+    </SidebarProvider>
+  )
 }

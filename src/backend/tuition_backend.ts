@@ -8,24 +8,22 @@ export interface Tuition {
   payment_date: string; // YYYY-MM-DD HH:MM:SS
 }
 
-export async function payTuition(amount: number, token: string): Promise<void> {
-  await fetchJson(`${BASE_URL}/pay/${amount}`, {
+const base_url = `${BASE_URL}/tuitions`
+
+export async function payTuition(amount: number): Promise<void> {
+  await fetchJson(`${base_url}/pay/${amount}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
   });
 }
 
 export async function listTuitions(): Promise<Tuition[]> {
-  return fetchJson<Tuition[]>(`${BASE_URL}`);
+  return fetchJson<Tuition[]>(`${base_url}`);
 }
 
 export async function listUserTuitions(userId: Uuid): Promise<Tuition[]> {
-  return fetchJson<Tuition[]>(`${BASE_URL}/${userId}`);
+  return fetchJson<Tuition[]>(`${base_url}/${userId}`);
 }
 
 export async function hasActiveTuition(userId: Uuid): Promise<boolean> {
-  return fetchJson<boolean>(`${BASE_URL}/active/${userId}`);
+  return fetchJson<boolean>(`${base_url}/active/${userId}`);
 }

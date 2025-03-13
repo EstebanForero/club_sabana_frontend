@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import React from "react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar";
 
-interface SidebarLink {
+export interface SidebarLink {
   icon: React.ComponentType;
   text: string;
   to: string;

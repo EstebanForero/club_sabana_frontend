@@ -1,5 +1,16 @@
+import { AuthManager } from "./auth";
+
 export async function fetchJson<T>(url: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(url, options);
+
+  const token = AuthManager.getToken() ?? ''
+
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    ...options,
+  });
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(errorText);

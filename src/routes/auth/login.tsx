@@ -2,12 +2,14 @@ import { logInUser } from '@/backend/user_backend';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from 'sonner';
-import { useAuthStore } from '@/backend/auth';
+import { AuthManager } from '@/backend/auth';
+import { navigateToRol } from '@/lib/utils';
+import { useEffect } from 'react';
 
 export const Route = createFileRoute('/auth/login')({
   component: RouteComponent,
@@ -21,6 +23,8 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 function RouteComponent() {
+  const navigate = useNavigate({ from: '/auth/login' })
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -29,11 +33,24 @@ function RouteComponent() {
     },
   });
 
+  useEffect(() => {
+    if (AuthManager.isAuthenticated()) {
+      const userRole = AuthManager.getUserRol()
+
+      if (userRole != null) {
+        navigateToRol(userRole, navigate)
+      }
+    }
+  }, [])
+
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      const { token, user_rol } = await logInUser(values);
+      const { token, user_rol, user_id } = await logInUser(values);
       console.log("Login successful", { token, user_rol });
       toast.success("Login succesful")
+      AuthManager.login(token, user_rol, user_id)
+      console.log(`User rol: ${user_rol}`)
+      navigateToRol(user_rol, navigate)
     } catch (error) {
       console.error("Login failed", error);
       form.setError("root", {

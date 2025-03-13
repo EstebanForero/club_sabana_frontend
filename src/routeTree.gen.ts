@@ -11,16 +11,65 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as DashboarduserImport } from './routes/dashboard_user'
+import { Route as DashboardtrainerImport } from './routes/dashboard_trainer'
+import { Route as DashboardadminImport } from './routes/dashboard_admin'
 import { Route as IndexImport } from './routes/index'
+import { Route as DashboarduserIndexImport } from './routes/dashboard_user/index'
+import { Route as DashboardtrainerIndexImport } from './routes/dashboard_trainer/index'
+import { Route as DashboardadminIndexImport } from './routes/dashboard_admin/index'
+import { Route as DashboarduserTuitionImport } from './routes/dashboard_user/tuition'
 import { Route as AuthSigninImport } from './routes/auth/signin'
 import { Route as AuthLoginImport } from './routes/auth/login'
 
 // Create/Update Routes
 
+const DashboarduserRoute = DashboarduserImport.update({
+  id: '/dashboard_user',
+  path: '/dashboard_user',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DashboardtrainerRoute = DashboardtrainerImport.update({
+  id: '/dashboard_trainer',
+  path: '/dashboard_trainer',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DashboardadminRoute = DashboardadminImport.update({
+  id: '/dashboard_admin',
+  path: '/dashboard_admin',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const DashboarduserIndexRoute = DashboarduserIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboarduserRoute,
+} as any)
+
+const DashboardtrainerIndexRoute = DashboardtrainerIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardtrainerRoute,
+} as any)
+
+const DashboardadminIndexRoute = DashboardadminIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardadminRoute,
+} as any)
+
+const DashboarduserTuitionRoute = DashboarduserTuitionImport.update({
+  id: '/tuition',
+  path: '/tuition',
+  getParentRoute: () => DashboarduserRoute,
 } as any)
 
 const AuthSigninRoute = AuthSigninImport.update({
@@ -46,6 +95,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/dashboard_admin': {
+      id: '/dashboard_admin'
+      path: '/dashboard_admin'
+      fullPath: '/dashboard_admin'
+      preLoaderRoute: typeof DashboardadminImport
+      parentRoute: typeof rootRoute
+    }
+    '/dashboard_trainer': {
+      id: '/dashboard_trainer'
+      path: '/dashboard_trainer'
+      fullPath: '/dashboard_trainer'
+      preLoaderRoute: typeof DashboardtrainerImport
+      parentRoute: typeof rootRoute
+    }
+    '/dashboard_user': {
+      id: '/dashboard_user'
+      path: '/dashboard_user'
+      fullPath: '/dashboard_user'
+      preLoaderRoute: typeof DashboarduserImport
+      parentRoute: typeof rootRoute
+    }
     '/auth/login': {
       id: '/auth/login'
       path: '/auth/login'
@@ -60,47 +130,164 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSigninImport
       parentRoute: typeof rootRoute
     }
+    '/dashboard_user/tuition': {
+      id: '/dashboard_user/tuition'
+      path: '/tuition'
+      fullPath: '/dashboard_user/tuition'
+      preLoaderRoute: typeof DashboarduserTuitionImport
+      parentRoute: typeof DashboarduserImport
+    }
+    '/dashboard_admin/': {
+      id: '/dashboard_admin/'
+      path: '/'
+      fullPath: '/dashboard_admin/'
+      preLoaderRoute: typeof DashboardadminIndexImport
+      parentRoute: typeof DashboardadminImport
+    }
+    '/dashboard_trainer/': {
+      id: '/dashboard_trainer/'
+      path: '/'
+      fullPath: '/dashboard_trainer/'
+      preLoaderRoute: typeof DashboardtrainerIndexImport
+      parentRoute: typeof DashboardtrainerImport
+    }
+    '/dashboard_user/': {
+      id: '/dashboard_user/'
+      path: '/'
+      fullPath: '/dashboard_user/'
+      preLoaderRoute: typeof DashboarduserIndexImport
+      parentRoute: typeof DashboarduserImport
+    }
   }
 }
 
 // Create and export the route tree
 
+interface DashboardadminRouteChildren {
+  DashboardadminIndexRoute: typeof DashboardadminIndexRoute
+}
+
+const DashboardadminRouteChildren: DashboardadminRouteChildren = {
+  DashboardadminIndexRoute: DashboardadminIndexRoute,
+}
+
+const DashboardadminRouteWithChildren = DashboardadminRoute._addFileChildren(
+  DashboardadminRouteChildren,
+)
+
+interface DashboardtrainerRouteChildren {
+  DashboardtrainerIndexRoute: typeof DashboardtrainerIndexRoute
+}
+
+const DashboardtrainerRouteChildren: DashboardtrainerRouteChildren = {
+  DashboardtrainerIndexRoute: DashboardtrainerIndexRoute,
+}
+
+const DashboardtrainerRouteWithChildren =
+  DashboardtrainerRoute._addFileChildren(DashboardtrainerRouteChildren)
+
+interface DashboarduserRouteChildren {
+  DashboarduserTuitionRoute: typeof DashboarduserTuitionRoute
+  DashboarduserIndexRoute: typeof DashboarduserIndexRoute
+}
+
+const DashboarduserRouteChildren: DashboarduserRouteChildren = {
+  DashboarduserTuitionRoute: DashboarduserTuitionRoute,
+  DashboarduserIndexRoute: DashboarduserIndexRoute,
+}
+
+const DashboarduserRouteWithChildren = DashboarduserRoute._addFileChildren(
+  DashboarduserRouteChildren,
+)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard_admin': typeof DashboardadminRouteWithChildren
+  '/dashboard_trainer': typeof DashboardtrainerRouteWithChildren
+  '/dashboard_user': typeof DashboarduserRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/signin': typeof AuthSigninRoute
+  '/dashboard_user/tuition': typeof DashboarduserTuitionRoute
+  '/dashboard_admin/': typeof DashboardadminIndexRoute
+  '/dashboard_trainer/': typeof DashboardtrainerIndexRoute
+  '/dashboard_user/': typeof DashboarduserIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signin': typeof AuthSigninRoute
+  '/dashboard_user/tuition': typeof DashboarduserTuitionRoute
+  '/dashboard_admin': typeof DashboardadminIndexRoute
+  '/dashboard_trainer': typeof DashboardtrainerIndexRoute
+  '/dashboard_user': typeof DashboarduserIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/dashboard_admin': typeof DashboardadminRouteWithChildren
+  '/dashboard_trainer': typeof DashboardtrainerRouteWithChildren
+  '/dashboard_user': typeof DashboarduserRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/signin': typeof AuthSigninRoute
+  '/dashboard_user/tuition': typeof DashboarduserTuitionRoute
+  '/dashboard_admin/': typeof DashboardadminIndexRoute
+  '/dashboard_trainer/': typeof DashboardtrainerIndexRoute
+  '/dashboard_user/': typeof DashboarduserIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth/login' | '/auth/signin'
+  fullPaths:
+    | '/'
+    | '/dashboard_admin'
+    | '/dashboard_trainer'
+    | '/dashboard_user'
+    | '/auth/login'
+    | '/auth/signin'
+    | '/dashboard_user/tuition'
+    | '/dashboard_admin/'
+    | '/dashboard_trainer/'
+    | '/dashboard_user/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth/login' | '/auth/signin'
-  id: '__root__' | '/' | '/auth/login' | '/auth/signin'
+  to:
+    | '/'
+    | '/auth/login'
+    | '/auth/signin'
+    | '/dashboard_user/tuition'
+    | '/dashboard_admin'
+    | '/dashboard_trainer'
+    | '/dashboard_user'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard_admin'
+    | '/dashboard_trainer'
+    | '/dashboard_user'
+    | '/auth/login'
+    | '/auth/signin'
+    | '/dashboard_user/tuition'
+    | '/dashboard_admin/'
+    | '/dashboard_trainer/'
+    | '/dashboard_user/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardadminRoute: typeof DashboardadminRouteWithChildren
+  DashboardtrainerRoute: typeof DashboardtrainerRouteWithChildren
+  DashboarduserRoute: typeof DashboarduserRouteWithChildren
   AuthLoginRoute: typeof AuthLoginRoute
   AuthSigninRoute: typeof AuthSigninRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardadminRoute: DashboardadminRouteWithChildren,
+  DashboardtrainerRoute: DashboardtrainerRouteWithChildren,
+  DashboarduserRoute: DashboarduserRouteWithChildren,
   AuthLoginRoute: AuthLoginRoute,
   AuthSigninRoute: AuthSigninRoute,
 }
@@ -116,6 +303,9 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/dashboard_admin",
+        "/dashboard_trainer",
+        "/dashboard_user",
         "/auth/login",
         "/auth/signin"
       ]
@@ -123,11 +313,46 @@ export const routeTree = rootRoute
     "/": {
       "filePath": "index.tsx"
     },
+    "/dashboard_admin": {
+      "filePath": "dashboard_admin.tsx",
+      "children": [
+        "/dashboard_admin/"
+      ]
+    },
+    "/dashboard_trainer": {
+      "filePath": "dashboard_trainer.tsx",
+      "children": [
+        "/dashboard_trainer/"
+      ]
+    },
+    "/dashboard_user": {
+      "filePath": "dashboard_user.tsx",
+      "children": [
+        "/dashboard_user/tuition",
+        "/dashboard_user/"
+      ]
+    },
     "/auth/login": {
       "filePath": "auth/login.tsx"
     },
     "/auth/signin": {
       "filePath": "auth/signin.tsx"
+    },
+    "/dashboard_user/tuition": {
+      "filePath": "dashboard_user/tuition.tsx",
+      "parent": "/dashboard_user"
+    },
+    "/dashboard_admin/": {
+      "filePath": "dashboard_admin/index.tsx",
+      "parent": "/dashboard_admin"
+    },
+    "/dashboard_trainer/": {
+      "filePath": "dashboard_trainer/index.tsx",
+      "parent": "/dashboard_trainer"
+    },
+    "/dashboard_user/": {
+      "filePath": "dashboard_user/index.tsx",
+      "parent": "/dashboard_user"
     }
   }
 }

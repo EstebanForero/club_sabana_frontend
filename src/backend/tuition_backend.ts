@@ -1,4 +1,4 @@
-import { BASE_URL, start_url, Uuid } from './common';
+import { BASE_URL, Uuid } from './common';
 import { fetchJson } from './utils';
 
 export interface Tuition {

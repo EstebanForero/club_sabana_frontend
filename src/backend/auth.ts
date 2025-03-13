@@ -1,5 +1,6 @@
 
 import { URol } from './common';
+import { OnLogInInfo } from './user_backend';
 
 export class AuthManager {
   private static TOKEN_KEY = 'authToken';
@@ -20,6 +21,22 @@ export class AuthManager {
 
   static isAuthenticated(): boolean {
     return !!this.getToken();
+  }
+
+  static getLogInInfo(): OnLogInInfo | null {
+    const token = localStorage.getItem(this.TOKEN_KEY)
+    const userRol = localStorage.getItem(this.ROLE_KEY) as URol | null;
+    const userId = localStorage.getItem(this.USER_ID_KEY)
+
+    if (token && userRol && userId) {
+      return {
+        token: token,
+        user_rol: userRol,
+        user_id: userId
+      }
+    }
+
+    return null
   }
 
   static login(token: string, userRol: URol, userId: string): void {

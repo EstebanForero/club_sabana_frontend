@@ -26,7 +26,7 @@ export const Route = createFileRoute('/dashboard_user/tuition')({
 function RouteComponent() {
   const queryClient = useQueryClient();
 
-  const { user_id: userId, token } = Route.useLoaderData()
+  const { user_id: userId } = Route.useLoaderData()
 
   const { data: hasActive, isLoading: isCheckingActive, error: activeError } = useQuery({
     queryKey: ['hasActiveTuition', userId],
@@ -40,7 +40,7 @@ function RouteComponent() {
   });
 
   const payMutation = useMutation({
-    mutationFn: (amount: number) => payTuition(amount, token),
+    mutationFn: (amount: number) => payTuition(amount),
     onSuccess: () => {
       toast.success('Tuition paid successfully');
       queryClient.invalidateQueries(['hasActiveTuition', userId]);

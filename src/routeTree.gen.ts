@@ -19,6 +19,7 @@ import { Route as DashboarduserIndexImport } from './routes/dashboard_user/index
 import { Route as DashboardtrainerIndexImport } from './routes/dashboard_trainer/index'
 import { Route as DashboardadminIndexImport } from './routes/dashboard_admin/index'
 import { Route as DashboarduserTuitionImport } from './routes/dashboard_user/tuition'
+import { Route as DashboarduserRequestsImport } from './routes/dashboard_user/requests'
 import { Route as AuthSigninImport } from './routes/auth/signin'
 import { Route as AuthLoginImport } from './routes/auth/login'
 
@@ -69,6 +70,12 @@ const DashboardadminIndexRoute = DashboardadminIndexImport.update({
 const DashboarduserTuitionRoute = DashboarduserTuitionImport.update({
   id: '/tuition',
   path: '/tuition',
+  getParentRoute: () => DashboarduserRoute,
+} as any)
+
+const DashboarduserRequestsRoute = DashboarduserRequestsImport.update({
+  id: '/requests',
+  path: '/requests',
   getParentRoute: () => DashboarduserRoute,
 } as any)
 
@@ -130,6 +137,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSigninImport
       parentRoute: typeof rootRoute
     }
+    '/dashboard_user/requests': {
+      id: '/dashboard_user/requests'
+      path: '/requests'
+      fullPath: '/dashboard_user/requests'
+      preLoaderRoute: typeof DashboarduserRequestsImport
+      parentRoute: typeof DashboarduserImport
+    }
     '/dashboard_user/tuition': {
       id: '/dashboard_user/tuition'
       path: '/tuition'
@@ -187,11 +201,13 @@ const DashboardtrainerRouteWithChildren =
   DashboardtrainerRoute._addFileChildren(DashboardtrainerRouteChildren)
 
 interface DashboarduserRouteChildren {
+  DashboarduserRequestsRoute: typeof DashboarduserRequestsRoute
   DashboarduserTuitionRoute: typeof DashboarduserTuitionRoute
   DashboarduserIndexRoute: typeof DashboarduserIndexRoute
 }
 
 const DashboarduserRouteChildren: DashboarduserRouteChildren = {
+  DashboarduserRequestsRoute: DashboarduserRequestsRoute,
   DashboarduserTuitionRoute: DashboarduserTuitionRoute,
   DashboarduserIndexRoute: DashboarduserIndexRoute,
 }
@@ -207,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/dashboard_user': typeof DashboarduserRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/signin': typeof AuthSigninRoute
+  '/dashboard_user/requests': typeof DashboarduserRequestsRoute
   '/dashboard_user/tuition': typeof DashboarduserTuitionRoute
   '/dashboard_admin/': typeof DashboardadminIndexRoute
   '/dashboard_trainer/': typeof DashboardtrainerIndexRoute
@@ -217,6 +234,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signin': typeof AuthSigninRoute
+  '/dashboard_user/requests': typeof DashboarduserRequestsRoute
   '/dashboard_user/tuition': typeof DashboarduserTuitionRoute
   '/dashboard_admin': typeof DashboardadminIndexRoute
   '/dashboard_trainer': typeof DashboardtrainerIndexRoute
@@ -231,6 +249,7 @@ export interface FileRoutesById {
   '/dashboard_user': typeof DashboarduserRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/signin': typeof AuthSigninRoute
+  '/dashboard_user/requests': typeof DashboarduserRequestsRoute
   '/dashboard_user/tuition': typeof DashboarduserTuitionRoute
   '/dashboard_admin/': typeof DashboardadminIndexRoute
   '/dashboard_trainer/': typeof DashboardtrainerIndexRoute
@@ -246,6 +265,7 @@ export interface FileRouteTypes {
     | '/dashboard_user'
     | '/auth/login'
     | '/auth/signin'
+    | '/dashboard_user/requests'
     | '/dashboard_user/tuition'
     | '/dashboard_admin/'
     | '/dashboard_trainer/'
@@ -255,6 +275,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth/login'
     | '/auth/signin'
+    | '/dashboard_user/requests'
     | '/dashboard_user/tuition'
     | '/dashboard_admin'
     | '/dashboard_trainer'
@@ -267,6 +288,7 @@ export interface FileRouteTypes {
     | '/dashboard_user'
     | '/auth/login'
     | '/auth/signin'
+    | '/dashboard_user/requests'
     | '/dashboard_user/tuition'
     | '/dashboard_admin/'
     | '/dashboard_trainer/'
@@ -328,6 +350,7 @@ export const routeTree = rootRoute
     "/dashboard_user": {
       "filePath": "dashboard_user.tsx",
       "children": [
+        "/dashboard_user/requests",
         "/dashboard_user/tuition",
         "/dashboard_user/"
       ]
@@ -337,6 +360,10 @@ export const routeTree = rootRoute
     },
     "/auth/signin": {
       "filePath": "auth/signin.tsx"
+    },
+    "/dashboard_user/requests": {
+      "filePath": "dashboard_user/requests.tsx",
+      "parent": "/dashboard_user"
     },
     "/dashboard_user/tuition": {
       "filePath": "dashboard_user/tuition.tsx",

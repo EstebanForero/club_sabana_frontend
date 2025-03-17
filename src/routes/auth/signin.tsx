@@ -1,28 +1,14 @@
-import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 
 import { registerUser } from '@/backend/user_backend';
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { IdType } from '@/backend/common';
 import { toast } from 'sonner';
+import ReusableForm, { FormFieldConfig } from '@/components/ReusableForm';
 
 export const Route = createFileRoute('/auth/signin')({
   component: RouteComponent,
 })
-
-const idTypes = Object.values(IdType);
 
 const registerSchema = z.object({
   first_name: z.string().min(1, { message: 'First name is required' }),
@@ -39,199 +25,57 @@ const registerSchema = z.object({
   }),
 });
 
-type RegisterFormValues = z.infer<typeof registerSchema>;
+const fields: FormFieldConfig[] = [
+  { name: 'first_name', label: 'First Name', placeholder: 'First Name' },
+  { name: 'last_name', label: 'Last Name', placeholder: 'Last Name' },
+  { name: 'birth_date', label: 'Birth Date', type: 'date' },
+  { name: 'email', label: 'Email', type: 'email', placeholder: 'Email' },
+  { name: 'phone_number', label: 'Phone Number', type: 'tel', placeholder: 'Phone Number' },
+  { name: 'country_code', label: 'Country Code', placeholder: 'Country Code (e.g., US)' },
+  { name: 'password', label: 'Password', type: 'password', placeholder: 'Password' },
+  {
+    name: 'identification_type',
+    label: 'Identification Type',
+    type: 'select',
+    options: Object.values(IdType).map((type) => ({ value: type, label: type })),
+    placeholder: 'Select identification type',
+  },
+  { name: 'identification_number', label: 'Identification Number', placeholder: 'Identification Number' },
+];
 
 function RouteComponent() {
-  const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      first_name: '',
-      last_name: '',
-      birth_date: '',
-      email: '',
-      phone_number: '',
-      country_code: '',
-      password: '',
-      identification_number: '',
-      identification_type: undefined,
-    },
-  });
+  const navigate = useNavigate({ from: '/auth/signin' });
 
-  const navigate = useNavigate({ from: '/auth/signin' })
-
-  const onSubmit = async (values: RegisterFormValues) => {
+  const onSubmit = async (values: z.infer<typeof registerSchema>) => {
     try {
       await registerUser(values);
-      console.log('Registration successful');
-      toast.success("User registered succesfully")
-      navigate({ to: '/auth/login' })
+      toast.success('User registered successfully');
+      navigate({ to: '/auth/login' });
     } catch (error) {
-      console.error('Registration failed', error);
-      form.setError('root', {
-        type: 'manual',
-        message: error instanceof Error ? error.message : 'Registration failed',
-      });
+      throw new Error(error instanceof Error ? error.message : 'Registration failed');
     }
   };
 
   return (
-    <div className='w-full flex items-center justify-center min-h-screen px-4'>
-      <div className='w-full sm:w-[600px] rounded-xl p-8 shadow-xl shadow-primary border border-primary'>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {form.formState.errors.root && (
-              <div className="text-red-500 text-sm">
-                {form.formState.errors.root.message}
-              </div>
-            )}
-
-            <FormField
-              control={form.control}
-              name="first_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>First Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="First Name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="last_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Last Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Last Name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="birth_date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Birth Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="Email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="phone_number"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <Input type="tel" placeholder="Phone Number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="country_code"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Country Code</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Country Code (e.g., US)" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="Password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="identification_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Identification Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select identification type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent defaultValue={idTypes[0]}>
-                      {idTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="identification_number"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Identification Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Identification Number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-
-            <Button
-              type="submit"
-              disabled={form.formState.isSubmitting}
-              className="w-full"
-            >
-              {form.formState.isSubmitting ? 'Registering...' : 'Register'}
-            </Button>
-          </form>
-        </Form>
+    <div className="w-full flex items-center justify-center min-h-screen px-4">
+      <div className="w-full sm:w-[600px] rounded-xl p-8 shadow-xl shadow-primary border border-primary">
+        <ReusableForm
+          schema={registerSchema}
+          defaultValues={{
+            first_name: '',
+            last_name: '',
+            birth_date: '',
+            email: '',
+            phone_number: '',
+            country_code: '',
+            password: '',
+            identification_number: '',
+            identification_type: IdType.CC,
+          }}
+          onSubmit={onSubmit}
+          fields={fields}
+          submitButtonText="Register"
+        />
       </div>
     </div>
   );

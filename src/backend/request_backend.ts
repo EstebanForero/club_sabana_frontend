@@ -1,4 +1,4 @@
-import { BASE_URL, start_url, Uuid } from './common';
+import { BASE_URL, base_url, start_url, Uuid } from './common';
 import { fetchJson } from './utils';
 
 export interface Request {
@@ -12,14 +12,15 @@ export interface Request {
 
 export interface RequestCreation {
   requester_id: Uuid;
-  requested_command: string;
-  justification: string;
+  requested_command: string; // Title of the request, or main requesting function
+  justification: string; // Information of the request.
 }
 
+const base_url = `${BASE_URL}/requests`
+
 export async function createRequest(request: RequestCreation): Promise<void> {
-  await fetchJson(`${BASE_URL}`, {
+  await fetchJson(`${base_url}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       ...request,
     }),
@@ -27,15 +28,15 @@ export async function createRequest(request: RequestCreation): Promise<void> {
 }
 
 export async function listRequests(): Promise<Request[]> {
-  return fetchJson<Request[]>(`${BASE_URL}`);
+  return fetchJson<Request[]>(`${base_url}`);
 }
 
 export async function getRequest(id: Uuid): Promise<Request> {
-  return fetchJson<Request>(`${BASE_URL}/${id}`);
+  return fetchJson<Request>(`${base_url}/${id}`);
 }
 
 export async function completeRequest(id: Uuid, approved: boolean, token: string): Promise<void> {
-  await fetchJson(`${BASE_URL}/${id}/complete/${approved}`, {
+  await fetchJson(`${base_url}/${id}/complete/${approved}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -45,5 +46,6 @@ export async function completeRequest(id: Uuid, approved: boolean, token: string
 }
 
 export async function listUserRequests(userId: Uuid): Promise<Request[]> {
-  return fetchJson<Request[]>(`${BASE_URL}/user/${userId}`);
+  return fetchJson<Request[]>(`${base_url}/user/${userId}`);
 }
+

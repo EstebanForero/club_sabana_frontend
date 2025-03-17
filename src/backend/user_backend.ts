@@ -77,9 +77,9 @@ export async function logInUser(logInInfo: UserLogInInfo): Promise<OnLogInInfo> 
 }
 
 export async function getAllUsers(): Promise<UserInfo[]> {
-  return fetchJson<UserInfo[]>(`${BASE_URL}`);
+  return fetchJson<UserInfo[]>(`${BASE_URL}/users`);
 }
 
 export async function getUserById(id: Uuid): Promise<UserInfo> {
-  return fetchJson<UserInfo>(`${BASE_URL}/${id}`);
+  return fetchJson<UserInfo>(`${BASE_URL}/users/${id}`);
 }

@@ -77,7 +77,7 @@ function RouteComponent() {
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto my-4">
+    <Card className="w-full max-w-4xl mx-auto my-4 shadow-primary shadow-lg">
       <CardHeader>
         <CardTitle className="text-2xl">Tuition Status</CardTitle>
       </CardHeader>

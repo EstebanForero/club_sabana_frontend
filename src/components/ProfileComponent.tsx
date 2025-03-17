@@ -63,16 +63,6 @@ const ProfileComponent: React.FC<ProfileComponentProps> = ({ userId, userRol }) 
     },
   });
 
-  const requestMutation = useMutation({
-    mutationFn: (request: RequestCreation) => createRequest(request),
-    onSuccess: () => {
-      toast.success('Request sent successfully');
-    },
-    onError: (err: Error) => {
-      toast.error(`Error sending request: ${err.message}`);
-    },
-  });
-
   const [requestCreation, setRequestCreation] = useState<RequestCreation>()
   const [open, setOpen] = useState(false)
 

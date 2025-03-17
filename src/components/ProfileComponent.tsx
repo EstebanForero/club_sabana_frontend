@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -7,6 +7,7 @@ import { getUserById, updateUser, UserCreation } from '@/backend/user_backend';
 import { IdType, URol } from '@/backend/common';
 import ReusableForm, { FormFieldConfig } from '@/components/ReusableForm';
 import { createRequest, RequestCreation } from '@/backend/request_backend';
+import PremadeRequest from './PremadeRequest';
 
 interface ProfileComponentProps {
   userId: string;
@@ -72,6 +73,14 @@ const ProfileComponent: React.FC<ProfileComponentProps> = ({ userId, userRol }) 
     },
   });
 
+  const [requestCreation, setRequestCreation] = useState<RequestCreation>()
+  const [open, setOpen] = useState(false)
+
+  if (isLoading) return <h1>Loading</h1>;
+  if (error) return <div>Error: {JSON.stringify(error)}</div>;
+  if (!user) return <div>User not found</div>;
+
+
   const onSubmit = async (values: z.infer<typeof profileSchema>) => {
     try {
       if (userRol === URol.ADMIN) {
@@ -80,9 +89,11 @@ const ProfileComponent: React.FC<ProfileComponentProps> = ({ userId, userRol }) 
         const request: RequestCreation = {
           requester_id: userId,
           requested_command: 'Update Profile',
-          justification: JSON.stringify(values),
+          justification: stringDifference(user, values),
         };
-        requestMutation.mutate(request);
+
+        setOpen(true)
+        setRequestCreation(request)
       }
     } catch (error) {
       throw new Error(error instanceof Error ? error.message : 'Operation failed');
@@ -118,9 +129,36 @@ const ProfileComponent: React.FC<ProfileComponentProps> = ({ userId, userRol }) 
           fields={fields}
           submitButtonText={userRol === URol.ADMIN ? 'Update Profile' : 'Request Update'}
         />
+        <PremadeRequest requestCreation={requestCreation ?? {
+          justification: '',
+          requested_command: '',
+          requester_id: ''
+        }} open={open} onOpenChange={setOpen} />
       </CardContent>
     </Card>
   );
 };
 
 export default ProfileComponent;
+
+
+function formatKey(key: string): string {
+  return key
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+function stringDifference<T extends object, S extends object>(original: T, updated: S): string {
+  const differences: string[] = [];
+  const commonKeys = Object.keys(original).filter(key => updated.hasOwnProperty(key));
+
+  for (const key of commonKeys) {
+    if ((original as any)[key] !== (updated as any)[key]) {
+      const formattedKey = formatKey(key);
+      differences.push(`${formattedKey}: ${(updated as any)[key]}`);
+    }
+  }
+
+  return differences.join("\n");
+}

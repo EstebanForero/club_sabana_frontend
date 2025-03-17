@@ -8,18 +8,21 @@ import RequestCreator from './RequestCreator'
 type Props = {
   requestCreation: RequestCreation,
   buttonVariant?: "link" | "default" | "destructive" | "outline" | "secondary" | "ghost",
-  buttonText: string,
-  className?: string
+  buttonText?: string,
+  className?: string,
+  open?: boolean
+  button?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-const PremadeRequest = ({ requestCreation, buttonVariant, buttonText, className }: Props) => {
+const PremadeRequest = ({ requestCreation, buttonVariant, buttonText, className, open, button, onOpenChange }: Props) => {
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger>
-        <Button variant={buttonVariant} className={className}>{buttonText}</Button>
+        {button && <Button variant={buttonVariant} className={className}>{buttonText}</Button>}
       </DialogTrigger>
       <DialogContent>
-        <RequestCreator />
+        <RequestCreator defaultValues={requestCreation} />
       </DialogContent>
     </Dialog>
   )

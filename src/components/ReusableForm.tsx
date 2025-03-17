@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
@@ -6,11 +6,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
+import { Textarea } from './ui/textarea';
 
 export interface FormFieldConfig {
   name: string;
   label: string;
-  type?: 'text' | 'email' | 'tel' | 'password' | 'date' | 'select';
+  type?: 'text' | 'email' | 'tel' | 'password' | 'date' | 'select' | 'textarea';
   options?: Array<{ value: string; label: string }>;
   placeholder?: string;
 }
@@ -63,13 +64,18 @@ const ReusableForm = <T extends z.ZodType<any, any>>({
                         ))}
                       </SelectContent>
                     </Select>
-                  ) : (
-                    <Input
-                      type={field.type || 'text'}
+                  ) : field.type === 'textarea' ?
+                    <Textarea
                       placeholder={field.placeholder || field.label}
                       {...formField}
                     />
-                  )}
+                    : (
+                      <Input
+                        type={field.type || 'text'}
+                        placeholder={field.placeholder || field.label}
+                        {...formField}
+                      />
+                    )}
                 </FormControl>
                 <FormMessage />
               </FormItem>

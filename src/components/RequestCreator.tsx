@@ -15,7 +15,7 @@ const profileSchema = z.object({
 
 const fields: FormFieldConfig[] = [
   { name: 'title', label: 'Request title', placeholder: 'ex. change user' },
-  { name: 'justification', label: 'Request justification', placeholder: 'ex. it does not represent my real name' },
+  { name: 'justification', label: 'Request justification', placeholder: 'ex. it does not represent my real name', type: 'textarea' },
 ];
 
 type Props = {

@@ -76,7 +76,7 @@ const ReusableForm = <T extends z.ZodType<any, any>>({
             )}
           />
         ))}
-        <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
+        <Button type="submit" disabled={form.formState.isSubmitting} className="w-full cursor-pointer">
           {form.formState.isSubmitting ? 'Processing...' : submitButtonText}
         </Button>
       </form>

@@ -1,3 +1,5 @@
+import { getAllUsers } from '@/backend/user_backend'
+import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/dashboard_admin/role_management')({
@@ -5,5 +7,12 @@ export const Route = createFileRoute('/dashboard_admin/role_management')({
 })
 
 function RouteComponent() {
-  return <div>Hello "/dashboard_admin/role_management"!</div>
+  const { } = useQuery({
+    queryFn: getAllUsers,
+    queryKey: ['user']
+  })
+
+  return <div>
+
+  </div>
 }

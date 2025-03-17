@@ -69,6 +69,12 @@ export async function updateUser(user: UserCreation, userId: string): Promise<vo
   });
 }
 
+export async function updateUserRol(userId: Uuid, userRol: URol): Promise<void> {
+  await fetchJson(`${BASE_URL}/update/${userId}/role/${userRol}`, {
+    method: 'PUT',
+  });
+}
+
 export async function logInUser(logInInfo: UserLogInInfo): Promise<OnLogInInfo> {
   return fetchJson<OnLogInInfo>(`${BASE_URL}/logIn`, {
     method: 'POST',

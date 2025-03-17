@@ -24,7 +24,7 @@ function RouteComponent() {
   return <div className='flex flex-col w-full p-8'>
     <RequestCreator />
     <h1 className='text-xl font-bold mb-2 mt-4'>Your requests</h1>
-    <div className='flex flex-row'>
+    <div className='flex flex-row gap-4 flex-wrap'>
       {userRequests.map((request, index) => <RequestVisualizer key={index} request={request} />)}
     </div>
   </div>

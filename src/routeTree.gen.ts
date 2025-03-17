@@ -20,6 +20,7 @@ import { Route as DashboardtrainerIndexImport } from './routes/dashboard_trainer
 import { Route as DashboardadminIndexImport } from './routes/dashboard_admin/index'
 import { Route as DashboarduserTuitionImport } from './routes/dashboard_user/tuition'
 import { Route as DashboarduserRequestsImport } from './routes/dashboard_user/requests'
+import { Route as DashboardadminRequestsImport } from './routes/dashboard_admin/requests'
 import { Route as AuthSigninImport } from './routes/auth/signin'
 import { Route as AuthLoginImport } from './routes/auth/login'
 
@@ -77,6 +78,12 @@ const DashboarduserRequestsRoute = DashboarduserRequestsImport.update({
   id: '/requests',
   path: '/requests',
   getParentRoute: () => DashboarduserRoute,
+} as any)
+
+const DashboardadminRequestsRoute = DashboardadminRequestsImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => DashboardadminRoute,
 } as any)
 
 const AuthSigninRoute = AuthSigninImport.update({
@@ -137,6 +144,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSigninImport
       parentRoute: typeof rootRoute
     }
+    '/dashboard_admin/requests': {
+      id: '/dashboard_admin/requests'
+      path: '/requests'
+      fullPath: '/dashboard_admin/requests'
+      preLoaderRoute: typeof DashboardadminRequestsImport
+      parentRoute: typeof DashboardadminImport
+    }
     '/dashboard_user/requests': {
       id: '/dashboard_user/requests'
       path: '/requests'
@@ -178,10 +192,12 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface DashboardadminRouteChildren {
+  DashboardadminRequestsRoute: typeof DashboardadminRequestsRoute
   DashboardadminIndexRoute: typeof DashboardadminIndexRoute
 }
 
 const DashboardadminRouteChildren: DashboardadminRouteChildren = {
+  DashboardadminRequestsRoute: DashboardadminRequestsRoute,
   DashboardadminIndexRoute: DashboardadminIndexRoute,
 }
 
@@ -223,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/dashboard_user': typeof DashboarduserRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/signin': typeof AuthSigninRoute
+  '/dashboard_admin/requests': typeof DashboardadminRequestsRoute
   '/dashboard_user/requests': typeof DashboarduserRequestsRoute
   '/dashboard_user/tuition': typeof DashboarduserTuitionRoute
   '/dashboard_admin/': typeof DashboardadminIndexRoute
@@ -234,6 +251,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signin': typeof AuthSigninRoute
+  '/dashboard_admin/requests': typeof DashboardadminRequestsRoute
   '/dashboard_user/requests': typeof DashboarduserRequestsRoute
   '/dashboard_user/tuition': typeof DashboarduserTuitionRoute
   '/dashboard_admin': typeof DashboardadminIndexRoute
@@ -249,6 +267,7 @@ export interface FileRoutesById {
   '/dashboard_user': typeof DashboarduserRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/signin': typeof AuthSigninRoute
+  '/dashboard_admin/requests': typeof DashboardadminRequestsRoute
   '/dashboard_user/requests': typeof DashboarduserRequestsRoute
   '/dashboard_user/tuition': typeof DashboarduserTuitionRoute
   '/dashboard_admin/': typeof DashboardadminIndexRoute
@@ -265,6 +284,7 @@ export interface FileRouteTypes {
     | '/dashboard_user'
     | '/auth/login'
     | '/auth/signin'
+    | '/dashboard_admin/requests'
     | '/dashboard_user/requests'
     | '/dashboard_user/tuition'
     | '/dashboard_admin/'
@@ -275,6 +295,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth/login'
     | '/auth/signin'
+    | '/dashboard_admin/requests'
     | '/dashboard_user/requests'
     | '/dashboard_user/tuition'
     | '/dashboard_admin'
@@ -288,6 +309,7 @@ export interface FileRouteTypes {
     | '/dashboard_user'
     | '/auth/login'
     | '/auth/signin'
+    | '/dashboard_admin/requests'
     | '/dashboard_user/requests'
     | '/dashboard_user/tuition'
     | '/dashboard_admin/'
@@ -338,6 +360,7 @@ export const routeTree = rootRoute
     "/dashboard_admin": {
       "filePath": "dashboard_admin.tsx",
       "children": [
+        "/dashboard_admin/requests",
         "/dashboard_admin/"
       ]
     },
@@ -360,6 +383,10 @@ export const routeTree = rootRoute
     },
     "/auth/signin": {
       "filePath": "auth/signin.tsx"
+    },
+    "/dashboard_admin/requests": {
+      "filePath": "dashboard_admin/requests.tsx",
+      "parent": "/dashboard_admin"
     },
     "/dashboard_user/requests": {
       "filePath": "dashboard_user/requests.tsx",

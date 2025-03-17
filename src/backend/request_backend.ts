@@ -1,8 +1,8 @@
-import { BASE_URL, base_url, start_url, Uuid } from './common';
+import { BASE_URL, Uuid } from './common';
 import { fetchJson } from './utils';
 
 export interface Request {
-  id: Uuid;
+  request_id: Uuid;
   requester_id: Uuid;
   requested_command: string;
   justification: string;

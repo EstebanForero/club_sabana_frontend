@@ -18,7 +18,11 @@ const fields: FormFieldConfig[] = [
   { name: 'justification', label: 'Request justification', placeholder: 'ex. it does not represent my real name' },
 ];
 
-const RequestCreator = () => {
+type Props = {
+  defaultValues?: RequestCreation
+}
+
+const RequestCreator = ({ defaultValues }: Props) => {
   const userId = AuthManager.getUserId() ?? ''
 
   const queryClient = useQueryClient()
@@ -48,8 +52,8 @@ const RequestCreator = () => {
             requester_id: AuthManager.getUserId() ?? ''
           })}
             defaultValues={{
-              title: '',
-              justification: ''
+              title: defaultValues?.requested_command ?? '',
+              justification: defaultValues?.justification ?? ''
             }}
           />
         </CardContent>

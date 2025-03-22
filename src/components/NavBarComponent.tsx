@@ -4,12 +4,13 @@ import React from 'react'
 
 const NavBarComponent = () => {
   return (
-    <div className="p-2 flex gap-2 text-lg absolute">
+    <div className="p-2 flex gap-4 text-lg absolute">
       <Link
         to="/"
         activeProps={{
-          className: 'font-bold',
+          className: 'bg-primary rounded-md',
         }}
+        className='px-2'
         activeOptions={{ exact: true }}
       >
         Home
@@ -17,8 +18,9 @@ const NavBarComponent = () => {
       <Link
         to="/auth/login"
         activeProps={{
-          className: 'font-bold',
+          className: 'bg-primary rounded-md',
         }}
+        className='px-2'
         activeOptions={{ exact: true }}
       >
         Login
@@ -26,8 +28,9 @@ const NavBarComponent = () => {
       <Link
         to="/auth/signin"
         activeProps={{
-          className: 'font-bold',
+          className: 'bg-primary rounded-md',
         }}
+        className='px-2'
         activeOptions={{ exact: true }}
       >
         Register

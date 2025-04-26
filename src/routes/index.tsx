@@ -55,7 +55,7 @@ function HomeComponent() {
         <h3 className="text-4xl font-bold mb-4">Club Sabana</h3>
         <p className="text-xl">Where your dreams become true</p>
       </div>
-      <Canvas className="md:w-1/2 h-full min-h-[300px]" style={{ background: '#1a1a1a' }}>
+      <Canvas className="md:w-1/2 h-full min-h-[400px]" style={{ background: '#1a1a1a' }}>
         <ambientLight intensity={0.5} />
         <directionalLight position={[0, 0, 5]} />
         <TennisBall

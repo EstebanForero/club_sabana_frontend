@@ -13,13 +13,13 @@ export const Route = createRootRoute({
 const queryClient = new QueryClient()
 
 function RootComponent() {
-  const match_user_dashboard = useMatch({ from: '/dashboard_user/', shouldThrow: false })
-  const match_admin_dashboard = useMatch({ from: '/dashboard_admin/', shouldThrow: false })
-  const match_trainer_dashboard = useMatch({ from: '/dashboard_trainer/', shouldThrow: false })
+  const match_user_dashboard = useMatch({ from: '/dashboard_user', shouldThrow: false })
+  const match_admin_dashboard = useMatch({ from: '/dashboard_admin', shouldThrow: false })
+  const match_trainer_dashboard = useMatch({ from: '/dashboard_trainer', shouldThrow: false })
 
-  console.log("I am in the user dashboard");
-
-
+  console.log(match_user_dashboard)
+  console.log(match_admin_dashboard)
+  console.log(match_trainer_dashboard)
 
   return (
     <>

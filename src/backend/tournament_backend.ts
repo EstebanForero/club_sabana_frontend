@@ -75,6 +75,7 @@ export async function recordAttendance(attendance: TournamentAttendance): Promis
   });
 }
 
+// Updates the position of a given user in the tournament
 export async function updatePosition(tournamentId: Uuid, userId: Uuid, position: number): Promise<string> {
   return fetchJson<string>(`${base_url}/tournaments/${tournamentId}/position/${userId}`, {
     method: 'PUT',

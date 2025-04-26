@@ -95,8 +95,8 @@ const ApprovedBadge = ({ approved, approver_id }: ApprovedBageProps) => {
   }
 
   return (
-    <div className='flex flex-row gap-4'>
-      {approved ? <Badge>approved</Badge> : <Badge>Rejected</Badge>}
+    <div className='flex flex-row gap-4 flex-wrap'>
+      {approved ? <Badge>approved</Badge> : <Badge className='bg-red-700'>Rejected</Badge>}
       <p>{approverInfo.email}</p>
     </div>
   )

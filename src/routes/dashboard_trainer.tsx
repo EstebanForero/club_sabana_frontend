@@ -8,7 +8,7 @@ export const Route = createFileRoute('/dashboard_trainer')({
 })
 
 const sidebarLinks: SidebarLink[] = [
-  { icon: UserPen, text: "Profile", to: "/dashboard_user" },
+  { icon: UserPen, text: "Profile", to: "/dashboard_trainer" },
   { icon: Mail, text: "Requests", to: "/dashboard_user/requests" },
   { icon: Trophy, text: "Tournaments", to: "/dashboard_trainer/tournament_management" },
 ];

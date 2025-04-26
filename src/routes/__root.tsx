@@ -17,6 +17,10 @@ function RootComponent() {
   const match_admin_dashboard = useMatch({ from: '/dashboard_admin/', shouldThrow: false })
   const match_trainer_dashboard = useMatch({ from: '/dashboard_trainer/', shouldThrow: false })
 
+  console.log("I am in the user dashboard");
+
+
+
   return (
     <>
       <QueryClientProvider client={queryClient}>

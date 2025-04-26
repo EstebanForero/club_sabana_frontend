@@ -1,4 +1,4 @@
-import { start_url, Uuid } from './common';
+import { BASE_URL, Uuid } from './common';
 import { fetchJson } from './utils';
 
 export interface Tournament {
@@ -29,10 +29,10 @@ export interface TournamentAttendance {
   position: number;
 }
 
-const BASE_URL = `${start_url}/tournaments`;
+const base_url = `${BASE_URL}/tournaments`;
 
 export async function createTournament(tournament: TournamentCreation): Promise<void> {
-  await fetchJson(`${BASE_URL}`, {
+  await fetchJson(`${base_url}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(tournament),
@@ -40,15 +40,15 @@ export async function createTournament(tournament: TournamentCreation): Promise<
 }
 
 export async function listTournaments(): Promise<Tournament[]> {
-  return fetchJson<Tournament[]>(`${BASE_URL}`);
+  return fetchJson<Tournament[]>(`${base_url}`);
 }
 
 export async function getTournament(id: Uuid): Promise<Tournament> {
-  return fetchJson<Tournament>(`${BASE_URL}/${id}`);
+  return fetchJson<Tournament>(`${base_url}/${id}`);
 }
 
 export async function updateTournament(tournament: Tournament): Promise<void> {
-  await fetchJson(`${BASE_URL}/${tournament.id_tournament}`, {
+  await fetchJson(`${base_url}/${tournament.id_tournament}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(tournament),
@@ -56,11 +56,11 @@ export async function updateTournament(tournament: Tournament): Promise<void> {
 }
 
 export async function deleteTournament(id: Uuid): Promise<string> {
-  return fetchJson<string>(`${BASE_URL}/${id}`, { method: 'DELETE' });
+  return fetchJson<string>(`${base_url}/${id}`, { method: 'DELETE' });
 }
 
 export async function registerUser(registration: TournamentRegistration): Promise<string> {
-  return fetchJson<string>(`${BASE_URL}/${registration.id_tournament}/register`, {
+  return fetchJson<string>(`${base_url}/${registration.id_tournament}/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(registration),
@@ -68,7 +68,7 @@ export async function registerUser(registration: TournamentRegistration): Promis
 }
 
 export async function recordAttendance(attendance: TournamentAttendance): Promise<string> {
-  return fetchJson<string>(`${BASE_URL}/${attendance.id_tournament}/attendance`, {
+  return fetchJson<string>(`${base_url}/${attendance.id_tournament}/attendance`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(attendance),
@@ -76,7 +76,7 @@ export async function recordAttendance(attendance: TournamentAttendance): Promis
 }
 
 export async function updatePosition(tournamentId: Uuid, userId: Uuid, position: number): Promise<string> {
-  return fetchJson<string>(`/tournaments/${tournamentId}/position/${userId}`, {
+  return fetchJson<string>(`${base_url}/tournaments/${tournamentId}/position/${userId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(position),
@@ -84,5 +84,5 @@ export async function updatePosition(tournamentId: Uuid, userId: Uuid, position:
 }
 
 export async function getEligibleTournaments(userId: Uuid): Promise<Tournament[]> {
-  return fetchJson<Tournament[]>(`/users/${userId}/eligible-tournaments`);
+  return fetchJson<Tournament[]>(`${base_url}/users/${userId}/eligible-tournaments`);
 }

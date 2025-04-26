@@ -1,3 +1,4 @@
+import TournamentCreation from '@/components/TournamentCreation'
 import TournamentManagement from '@/components/TournamentManagement'
 import { createFileRoute } from '@tanstack/react-router'
 
@@ -8,5 +9,8 @@ export const Route = createFileRoute(
 })
 
 function RouteComponent() {
-  return <TournamentManagement />
+  return <div>
+    <TournamentCreation />
+    <TournamentManagement />
+  </div>
 }

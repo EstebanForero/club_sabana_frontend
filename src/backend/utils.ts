@@ -4,6 +4,8 @@ export async function fetchJson<T>(url: string, options: RequestInit = {}): Prom
 
   const token = AuthManager.getToken() ?? ''
 
+  console.log('The url is: ', url)
+
   const response = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',

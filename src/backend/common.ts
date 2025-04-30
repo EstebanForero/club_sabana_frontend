@@ -8,6 +8,8 @@ export enum LevelName {
   PROFESSIONAL = "PROFESSIONAL",
 }
 
+export const ALL_LEVELS = Object.values(LevelName) as [string, ...string[]]
+
 export enum IdType {
   CC = "CC",
 }

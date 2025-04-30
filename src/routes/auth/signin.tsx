@@ -11,15 +11,17 @@ export const Route = createFileRoute('/auth/signin')({
 })
 
 const registerSchema = z.object({
-  first_name: z.string().min(1, { message: 'First name is required' }),
-  last_name: z.string().min(1, { message: 'Last name is required' }),
+  first_name: z.string().min(1, { message: 'First name is required' }).max(20, { message: 'max lenght is 20' }),
+  last_name: z.string().min(1, { message: 'Last name is required' }).max(20, { message: 'max lenght is 20' }),
   birth_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Birth date must be in YYYY-MM-DD format' }),
   email: z.string().email({ message: 'Invalid email address' }),
-  phone_number: z.string().min(1, { message: 'Phone number is required' }),
+  phone_number: z.string().min(1, { message: 'Phone number is required' }).max(20, { message: 'max lenght is 20' })
+    .regex(/^\d+$/, { message: 'Phone number must contain only numbers' }),
   country_code: z.string().min(1, { message: 'Country code is required' })
-    .max(2, { message: "Country code can't be longer than 2" }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
-  identification_number: z.string().min(1, { message: 'Identification number is required' }),
+    .max(2, { message: "Country code can't be longer than 2" })
+    .regex(/^\d+$/, { message: 'Phone number must contain only numbers' }),
+  password: z.string().min(6, { message: 'Password must be at least 6 characters' }).max(30, { message: 'max lenght is 30' }),
+  identification_number: z.string().min(1, { message: 'Identification number is required' }).max(14, { message: 'max lenght is 14' }),
   identification_type: z.nativeEnum(IdType, {
     message: 'Please select an identification type',
   }),

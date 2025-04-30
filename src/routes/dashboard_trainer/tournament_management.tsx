@@ -10,7 +10,6 @@ export const Route = createFileRoute(
 
 function RouteComponent() {
   return <div>
-    <TournamentCreation />
     <TournamentManagement />
   </div>
 }

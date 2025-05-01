@@ -87,3 +87,12 @@ export async function updatePosition(tournamentId: Uuid, userId: Uuid, position:
 export async function getEligibleTournaments(userId: Uuid): Promise<Tournament[]> {
   return fetchJson<Tournament[]>(`${base_url}/users/${userId}/eligible-tournaments`);
 }
+
+export async function getUserRegistrations(userId: Uuid): Promise<TournamentRegistration[]> {
+  return fetchJson<TournamentRegistration[]>(`${base_url}/registrations/user/${userId}`);
+}
+
+export async function getTournamentRegistrations(tournamentId: Uuid): Promise<TournamentRegistration[]> {
+  return fetchJson<TournamentRegistration[]>(`${base_url}/registrations/tournament/${tournamentId}`);
+}
+

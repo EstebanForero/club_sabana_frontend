@@ -285,11 +285,11 @@ const LoadingSkeletons: React.FC = () => (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {[1].map((i) => (
           <div key={`attended-skel-${i}`} className="space-y-3 p-4 border rounded-lg dark:border-gray-700">
-            <Skeleton className="h-6 w-3/4" /> {/* Title */}
-            <Skeleton className="h-4 w-1/2" /> {/* Description (dates) */}
-            <div className="flex flex-col space-y-2 pt-3 border-t mt-2"> {/* Footer */}
-              <Skeleton className="h-5 w-3/4" /> {/* Attended Date */}
-              <Skeleton className="h-5 w-1/2" /> {/* Position */}
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <div className="flex flex-col space-y-2 pt-3 border-t mt-2">
+              <Skeleton className="h-5 w-3/4" />
+              <Skeleton className="h-5 w-1/2" />
             </div>
           </div>
         ))}

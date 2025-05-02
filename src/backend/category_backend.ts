@@ -86,3 +86,7 @@ export async function getRequirements(categoryId: Uuid): Promise<CategoryRequire
 export async function getUserCategory(categoryId: Uuid, userId: Uuid): Promise<UserCategory | null> {
   return fetchJson<UserCategory | null>(`${BASE_URL}/categories/${categoryId}/users/${userId}`);
 }
+
+export async function getUserCategories(userId: Uuid): Promise<UserCategory[] | null> {
+  return fetchJson<UserCategory[] | null>(`${BASE_URL}/categories/user/${userId}`);
+}

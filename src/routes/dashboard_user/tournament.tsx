@@ -30,7 +30,6 @@ function TournamentPageComponent() {
   const queryClient = useQueryClient();
   const [registeringTournamentId, setRegisteringTournamentId] = useState<Uuid | null>(null);
 
-  // 1. Fetch Eligible Tournaments
   const {
     data: eligibleTournaments,
     isLoading: isLoadingEligible,
@@ -43,7 +42,6 @@ function TournamentPageComponent() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // 2. Fetch User's Registrations
   const {
     data: registrationsData,
     isLoading: isLoadingRegistrations,

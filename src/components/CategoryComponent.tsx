@@ -1,13 +1,12 @@
-// src/components/categories/CategoryComponent.tsx
 import React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Pencil, Trash2, ListChecks } from 'lucide-react'; // Icons
+import { Pencil, Trash2, ListChecks } from 'lucide-react';
 
-import { Category, deleteCategory } from '@/backend/category_backend'; // Adjust path
+import { Category, deleteCategory } from '@/backend/category_backend';
 import { Uuid } from '@/backend/common';
 import { Button } from '@/components/ui/button';
-// ... other Card imports
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +21,6 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle
@@ -32,16 +30,14 @@ import {
 type Props = {
   category: Category;
   onEdit: (category: Category) => void;
-  // *** Add the onViewRequirements callback prop ***
   onViewRequirements: (categoryId: Uuid, categoryName: string) => void;
 };
 
-const CategoryComponent = ({ category, onEdit, onViewRequirements }: Props) => { // Add onViewRequirements here
+const CategoryComponent = ({ category, onEdit, onViewRequirements }: Props) => {
   const queryClient = useQueryClient();
 
-  // Delete Mutation (reuse existing placeholder or real one)
   const deleteMutation = useMutation({
-    mutationFn: deleteCategory, // Use the same placeholder/real function
+    mutationFn: deleteCategory,
     onSuccess: (message) => {
       toast.success(message || `Category "${category.name}" deleted successfully!`);
       queryClient.invalidateQueries({ queryKey: ['categories'] });
@@ -61,7 +57,6 @@ const CategoryComponent = ({ category, onEdit, onViewRequirements }: Props) => {
     onEdit(category);
   };
 
-  // *** Handler for the Requirements button ***
   const handleViewRequirements = () => {
     onViewRequirements(category.id_category, category.name);
   }
@@ -71,25 +66,20 @@ const CategoryComponent = ({ category, onEdit, onViewRequirements }: Props) => {
       <div>
         <CardHeader>
           <CardTitle className="text-lg font-semibold">{category.name}</CardTitle>
-          {/* Optionally show ID - might be too technical for some users */}
-          {/* <CardDescription>ID: {category.id_category}</CardDescription> */}
         </CardHeader>
         <CardContent className="text-sm text-gray-400">
           <p>Age Range: {category.min_age} - {category.max_age} years</p>
         </CardContent>
       </div>
       <CardFooter className="flex justify-end gap-2 border-t pt-4 mt-4 flex-wrap">
-        {/* *** Requirements Button *** */}
         <Button variant="outline" size="sm" onClick={handleViewRequirements} className="w-full">
           <ListChecks className="mr-2 h-4 w-4" /> Requirements
         </Button>
 
-        {/* Edit Button */}
         <Button variant="outline" size="sm" onClick={handleEdit} className='grow'>
           <Pencil className="mr-2 h-4 w-4" /> Edit
         </Button>
 
-        {/* Delete Button */}
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" size="sm" disabled={deleteMutation.isLoading}>

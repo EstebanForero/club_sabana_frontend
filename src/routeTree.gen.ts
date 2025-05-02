@@ -21,6 +21,7 @@ import { Route as DashboardadminIndexImport } from './routes/dashboard_admin/ind
 import { Route as DashboarduserTuitionImport } from './routes/dashboard_user/tuition'
 import { Route as DashboarduserTournamentImport } from './routes/dashboard_user/tournament'
 import { Route as DashboarduserRequestsImport } from './routes/dashboard_user/requests'
+import { Route as DashboarduserCategoriesImport } from './routes/dashboard_user/categories'
 import { Route as DashboardtrainerTournamentmanagementImport } from './routes/dashboard_trainer/tournament_management'
 import { Route as DashboardadminRolemanagementImport } from './routes/dashboard_admin/role_management'
 import { Route as DashboardadminRequestsImport } from './routes/dashboard_admin/requests'
@@ -87,6 +88,12 @@ const DashboarduserTournamentRoute = DashboarduserTournamentImport.update({
 const DashboarduserRequestsRoute = DashboarduserRequestsImport.update({
   id: '/requests',
   path: '/requests',
+  getParentRoute: () => DashboarduserRoute,
+} as any)
+
+const DashboarduserCategoriesRoute = DashboarduserCategoriesImport.update({
+  id: '/categories',
+  path: '/categories',
   getParentRoute: () => DashboarduserRoute,
 } as any)
 
@@ -203,6 +210,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardtrainerTournamentmanagementImport
       parentRoute: typeof DashboardtrainerImport
     }
+    '/dashboard_user/categories': {
+      id: '/dashboard_user/categories'
+      path: '/categories'
+      fullPath: '/dashboard_user/categories'
+      preLoaderRoute: typeof DashboarduserCategoriesImport
+      parentRoute: typeof DashboarduserImport
+    }
     '/dashboard_user/requests': {
       id: '/dashboard_user/requests'
       path: '/requests'
@@ -283,6 +297,7 @@ const DashboardtrainerRouteWithChildren =
   DashboardtrainerRoute._addFileChildren(DashboardtrainerRouteChildren)
 
 interface DashboarduserRouteChildren {
+  DashboarduserCategoriesRoute: typeof DashboarduserCategoriesRoute
   DashboarduserRequestsRoute: typeof DashboarduserRequestsRoute
   DashboarduserTournamentRoute: typeof DashboarduserTournamentRoute
   DashboarduserTuitionRoute: typeof DashboarduserTuitionRoute
@@ -290,6 +305,7 @@ interface DashboarduserRouteChildren {
 }
 
 const DashboarduserRouteChildren: DashboarduserRouteChildren = {
+  DashboarduserCategoriesRoute: DashboarduserCategoriesRoute,
   DashboarduserRequestsRoute: DashboarduserRequestsRoute,
   DashboarduserTournamentRoute: DashboarduserTournamentRoute,
   DashboarduserTuitionRoute: DashboarduserTuitionRoute,
@@ -311,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/dashboard_admin/requests': typeof DashboardadminRequestsRoute
   '/dashboard_admin/role_management': typeof DashboardadminRolemanagementRoute
   '/dashboard_trainer/tournament_management': typeof DashboardtrainerTournamentmanagementRoute
+  '/dashboard_user/categories': typeof DashboarduserCategoriesRoute
   '/dashboard_user/requests': typeof DashboarduserRequestsRoute
   '/dashboard_user/tournament': typeof DashboarduserTournamentRoute
   '/dashboard_user/tuition': typeof DashboarduserTuitionRoute
@@ -327,6 +344,7 @@ export interface FileRoutesByTo {
   '/dashboard_admin/requests': typeof DashboardadminRequestsRoute
   '/dashboard_admin/role_management': typeof DashboardadminRolemanagementRoute
   '/dashboard_trainer/tournament_management': typeof DashboardtrainerTournamentmanagementRoute
+  '/dashboard_user/categories': typeof DashboarduserCategoriesRoute
   '/dashboard_user/requests': typeof DashboarduserRequestsRoute
   '/dashboard_user/tournament': typeof DashboarduserTournamentRoute
   '/dashboard_user/tuition': typeof DashboarduserTuitionRoute
@@ -347,6 +365,7 @@ export interface FileRoutesById {
   '/dashboard_admin/requests': typeof DashboardadminRequestsRoute
   '/dashboard_admin/role_management': typeof DashboardadminRolemanagementRoute
   '/dashboard_trainer/tournament_management': typeof DashboardtrainerTournamentmanagementRoute
+  '/dashboard_user/categories': typeof DashboarduserCategoriesRoute
   '/dashboard_user/requests': typeof DashboarduserRequestsRoute
   '/dashboard_user/tournament': typeof DashboarduserTournamentRoute
   '/dashboard_user/tuition': typeof DashboarduserTuitionRoute
@@ -368,6 +387,7 @@ export interface FileRouteTypes {
     | '/dashboard_admin/requests'
     | '/dashboard_admin/role_management'
     | '/dashboard_trainer/tournament_management'
+    | '/dashboard_user/categories'
     | '/dashboard_user/requests'
     | '/dashboard_user/tournament'
     | '/dashboard_user/tuition'
@@ -383,6 +403,7 @@ export interface FileRouteTypes {
     | '/dashboard_admin/requests'
     | '/dashboard_admin/role_management'
     | '/dashboard_trainer/tournament_management'
+    | '/dashboard_user/categories'
     | '/dashboard_user/requests'
     | '/dashboard_user/tournament'
     | '/dashboard_user/tuition'
@@ -401,6 +422,7 @@ export interface FileRouteTypes {
     | '/dashboard_admin/requests'
     | '/dashboard_admin/role_management'
     | '/dashboard_trainer/tournament_management'
+    | '/dashboard_user/categories'
     | '/dashboard_user/requests'
     | '/dashboard_user/tournament'
     | '/dashboard_user/tuition'
@@ -468,6 +490,7 @@ export const routeTree = rootRoute
     "/dashboard_user": {
       "filePath": "dashboard_user.tsx",
       "children": [
+        "/dashboard_user/categories",
         "/dashboard_user/requests",
         "/dashboard_user/tournament",
         "/dashboard_user/tuition",
@@ -495,6 +518,10 @@ export const routeTree = rootRoute
     "/dashboard_trainer/tournament_management": {
       "filePath": "dashboard_trainer/tournament_management.tsx",
       "parent": "/dashboard_trainer"
+    },
+    "/dashboard_user/categories": {
+      "filePath": "dashboard_user/categories.tsx",
+      "parent": "/dashboard_user"
     },
     "/dashboard_user/requests": {
       "filePath": "dashboard_user/requests.tsx",

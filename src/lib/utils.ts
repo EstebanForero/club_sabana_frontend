@@ -23,3 +23,10 @@ export function navigateToRol(user_rol: URol, navigate: UseNavigateResult<string
     })
   }
 }
+
+export function getCurrentDateTimeString(): string {
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60000; // Offset in milliseconds
+  const localISOTime = (new Date(now.getTime() - offset)).toISOString().slice(0, 19).replace('T', ' ');
+  return localISOTime; // Format: YYYY-MM-DD HH:MM:SS
+}

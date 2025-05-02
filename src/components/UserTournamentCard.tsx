@@ -13,6 +13,7 @@ import {
 import { Tournament, TournamentRegistration } from '@/backend/tournament_backend'; // Adjust path
 import { Uuid } from '@/backend/common'; // Adjust path
 import { CalendarDays, Trophy } from 'lucide-react'; // Add relevant icons
+import { getCurrentDateTimeString } from '@/lib/utils';
 
 // Same date formatting helper
 const formatDate = (dateString: string | null | undefined): string => {
@@ -92,14 +93,5 @@ const UserTournamentCard: React.FC<UserTournamentCardProps> = ({
     </Card>
   );
 };
-
-// Helper function (can be moved to utils)
-function getCurrentDateTimeString(): string {
-  const now = new Date();
-  const offset = now.getTimezoneOffset() * 60000; // Offset in milliseconds
-  const localISOTime = (new Date(now.getTime() - offset)).toISOString().slice(0, 19).replace('T', ' ');
-  return localISOTime; // Format: YYYY-MM-DD HH:MM:SS
-}
-
 
 export default UserTournamentCard;

@@ -96,3 +96,18 @@ export async function getTournamentRegistrations(tournamentId: Uuid): Promise<To
   return fetchJson<TournamentRegistration[]>(`${base_url}/registrations/tournament/${tournamentId}`);
 }
 
+export async function getTournamentAttendance(
+  tournamentId: Uuid
+): Promise<TournamentAttendance[]> {
+  return fetchJson<TournamentAttendance[]>(
+    `${base_url}/${tournamentId}/attendance`
+  );
+}
+
+export async function getUserAttendance(
+  userId: Uuid
+): Promise<TournamentAttendance[]> {
+  return fetchJson<TournamentAttendance[]>(
+    `${base_url}/users/${userId}/attendance`
+  );
+}

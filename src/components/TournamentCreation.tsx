@@ -26,8 +26,7 @@ const TournamentCreation = () => {
     onSuccess: () => {
       toast.success('Tournament created successfully!');
       queryClient.invalidateQueries({ queryKey: ['tournaments'] });
-      setIsOpen(false); // Close dialog on success
-      // Form reset is handled within TournamentForm via useEffect/props
+      setIsOpen(false);
     },
     onError: (error: Error) => {
       console.error("Error creating tournament:", error);
@@ -37,7 +36,6 @@ const TournamentCreation = () => {
 
   function handleFormSubmit(values: TournamentFormData) {
     console.log("Submitting Tournament Creation:", values);
-    // Type assertion needed as schema ensures it's a valid UUID string here
     const tournamentData: TournamentCreationData = {
       ...values,
       id_category: values.id_category as Uuid,

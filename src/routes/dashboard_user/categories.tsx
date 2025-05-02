@@ -9,15 +9,17 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Category, CategoryRequirement, getRequirements, getUserCategories, listCategories, UserCategory } from '@/backend/category_backend'; // Adjust path
-import { Users, ListChecks, Target, Award, AlertTriangle } from 'lucide-react'; // Icons
+import { Category, CategoryRequirement, checkUserEligibility, getRequirements, getUserCategories, listCategories, registerUserInCategory, UserCategory } from '@/backend/category_backend'; // Adjust path
+import { Users, ListChecks, Target, Award, AlertTriangle, Check, Loader2, AlertCircle } from 'lucide-react'; // Icons
 import { LevelName, Uuid } from '@/backend/common';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { useQueries, useQuery } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AuthManager } from '@/backend/auth';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export const Route = createFileRoute('/dashboard_user/categories')({
   component: RouteComponent,
@@ -36,34 +38,39 @@ export interface EnrichedCategoryData {
 }
 
 function RouteComponent() {
+  const queryClient = useQueryClient(); // Get query client instance
   const userId = AuthManager.getUserId();
+  const [registeringCategoryId, setRegisteringCategoryId] = useState<Uuid | null>(null); // Track registration attempt
 
+  // --- Base Data Fetching (Categories, User Assignments, Requirements) ---
+  // 1. Fetch All Categories (no change)
   const {
     data: allCategories,
     isLoading: isLoadingCategories,
     isError: isErrorCategories,
     error: errorCategories,
-  } = useQuery({
+  } = useQuery({ /* ... query config same as before ... */
     queryKey: ['categories'],
     queryFn: listCategories,
     staleTime: 10 * 60 * 1000,
   });
 
+  // 2. Fetch User's Category Assignments (no change)
   const {
     data: userCategoryAssignments,
     isLoading: isLoadingUserCats,
     isError: isErrorUserCats,
     error: errorUserCats,
-  } = useQuery({
+  } = useQuery({ /* ... query config same as before ... */
     queryKey: ['userCategories', userId],
     queryFn: () => getUserCategories(userId!),
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,
   });
 
+  // 3. Fetch Requirements for ALL categories using useQueries (no change)
   const categoryIds = useMemo(() => allCategories?.map(c => c.id_category) ?? [], [allCategories]);
-
-  const requirementsQueries = useQueries({
+  const requirementsQueries = useQueries({ /* ... query config same as before ... */
     queries: categoryIds.map((id) => ({
       queryKey: ['categoryRequirements', id],
       queryFn: () => getRequirements(id),
@@ -71,31 +78,26 @@ function RouteComponent() {
       enabled: !!allCategories,
     })),
   });
-
   const isLoadingRequirements = requirementsQueries.some(q => q.isLoading);
   const isErrorRequirements = requirementsQueries.some(q => q.isError);
   const errorRequirements = requirementsQueries.find(q => q.isError)?.error as Error | undefined;
 
-  const isLoading = isLoadingCategories || (!!userId && isLoadingUserCats) || (!!allCategories && isLoadingRequirements);
-  const isError = isErrorCategories || (!!userId && isErrorUserCats) || isErrorRequirements;
-  const error = errorCategories || errorUserCats || errorRequirements; // Display the first encountered error
-
+  // --- Enriched Data Calculation (Combine Categories, Assignments, Requirements) ---
+  // (Memoization logic remains largely the same)
   const enrichedCategories = useMemo<EnrichedCategoryData[]>(() => {
-    if (isLoading || isError || !allCategories) {
+    // ... same logic as before to combine allCategories, userCategoryAssignments, requirementsQueries results ...
+    // This produces the list including userLevel (null if not assigned)
+    if (isLoadingCategories || (!!userId && isLoadingUserCats) || (!!allCategories && isLoadingRequirements) || !allCategories) {
       return [];
     }
-
     const userLevelMap = new Map<Uuid, UserCategory>();
     userCategoryAssignments?.forEach(uc => userLevelMap.set(uc.id_category, uc));
-
     const requirementsMap = new Map<Uuid, CategoryRequirement[]>();
     requirementsQueries.forEach((queryResult, index) => {
       if (queryResult.isSuccess && queryResult.data) {
-        const categoryId = categoryIds[index]; // Get corresponding category ID
-        requirementsMap.set(categoryId, queryResult.data);
+        requirementsMap.set(categoryIds[index], queryResult.data);
       }
     });
-
     return allCategories.map(category => {
       const userAssignment = userLevelMap.get(category.id_category);
       const requirements = requirementsMap.get(category.id_category) ?? [];
@@ -105,18 +107,64 @@ function RouteComponent() {
         userLevel: userAssignment?.user_level ?? null,
       };
     });
+  }, [allCategories, userCategoryAssignments, requirementsQueries, categoryIds, isLoadingCategories, isLoadingUserCats, isLoadingRequirements, userId]); // Ensure all dependencies are listed
 
-  }, [
-    allCategories,
-    userCategoryAssignments,
-    requirementsQueries,
-    categoryIds,
-    isLoading,
-    isError
-  ]);
 
   const registeredCategoryList = enrichedCategories.filter(ec => ec.userLevel !== null);
-  const availableCategoryList = enrichedCategories.filter(ec => ec.userLevel === null);
+  const potentiallyAvailableList = enrichedCategories.filter(ec => ec.userLevel === null);
+  const potentiallyAvailableIds = useMemo(() => potentiallyAvailableList.map(ec => ec.category.id_category), [potentiallyAvailableList]);
+
+  const eligibilityQueries = useQueries({
+    queries: potentiallyAvailableIds.map((catId) => ({
+      queryKey: ['categoryEligibility', catId, userId],
+      queryFn: () => checkUserEligibility(catId, userId!),
+      enabled: !!userId && potentiallyAvailableIds.length > 0,
+      staleTime: 1 * 60 * 1000,
+      retry: false,
+    })),
+  });
+  const isLoadingEligibility = eligibilityQueries.some(q => q.isLoading);
+
+  const eligibilityStatusMap = useMemo(() => {
+    const map = new Map<Uuid, EligibilityStatus>();
+    eligibilityQueries.forEach((queryResult, index) => {
+      const categoryId = potentiallyAvailableIds[index];
+      if (categoryId) {
+        console.log(queryResult.error)
+        map.set(categoryId, {
+          isLoading: queryResult.isLoading,
+          isEligible: queryResult.isSuccess,
+          error: queryResult.error as Error | null,
+        });
+      }
+    });
+    return map;
+  }, [eligibilityQueries, potentiallyAvailableIds]);
+
+
+  const registerMutation = useMutation({
+    mutationFn: (categoryId: Uuid) => registerUserInCategory(categoryId, userId!),
+    onMutate: (categoryId) => {
+      setRegisteringCategoryId(categoryId);
+    },
+    onSuccess: (_, categoryId) => {
+      toast.success("Successfully registered for category!");
+      queryClient.invalidateQueries({ queryKey: ['userCategories', userId] });
+      queryClient.invalidateQueries({ queryKey: ['categoryEligibility', categoryId, userId] });
+    },
+    onError: (error: Error, categoryId) => {
+      console.error("Registration Error:", error);
+      toast.error(`Registration failed: ${error.message || 'Unknown error'}`);
+    },
+    onSettled: () => {
+      setRegisteringCategoryId(null);
+    }
+  });
+
+  const isLoading = isLoadingCategories || (!!userId && isLoadingUserCats) || isLoadingRequirements || (potentiallyAvailableIds.length > 0 && isLoadingEligibility);
+  const isCriticalError = isErrorCategories || (!!userId && isErrorUserCats) || isErrorRequirements;
+  const criticalError = errorCategories || errorUserCats || errorRequirements;
+
 
   if (!userId) {
     return (
@@ -132,28 +180,37 @@ function RouteComponent() {
     );
   }
 
-
   if (isLoading) {
     return <LoadingSkeletons />;
   }
 
-  if (isError) {
-    return <ErrorDisplay error={new Error("Server error loading data")} />;
+  if (isCriticalError) {
+    return <ErrorDisplay error={new Error("Internal server error getting data")} />;
   }
 
   return (
     <div className="container mx-auto p-4 space-y-8">
       <div>
         <h1 className="text-2xl font-bold mb-4">Available Categories</h1>
-        {availableCategoryList.length > 0 ? (
+        {potentiallyAvailableList.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {availableCategoryList.map(({ category, requirements }) => (
-              <AvailableCategoryCard
-                key={category.id_category}
-                category={category}
-                requirements={requirements}
-              />
-            ))}
+            {potentiallyAvailableList.map(({ category, requirements }) => {
+              const eligibilityStatus = eligibilityStatusMap.get(category.id_category) ?? {
+                isLoading: false, isEligible: null, error: new Error("Eligibility status not found.")
+              };
+
+              return (
+                <AvailableCategoryCard
+                  key={category.id_category}
+                  category={category}
+                  requirements={requirements}
+                  userId={userId}
+                  eligibilityStatus={eligibilityStatus}
+                  onRegister={registerMutation.mutate}
+                  isRegistering={registeringCategoryId === category.id_category}
+                />
+              );
+            })}
           </div>
         ) : (
           <p className="text-center text-gray-500 dark:text-gray-400 mt-4">
@@ -242,32 +299,113 @@ const ErrorDisplay: React.FC<{ error: Error | null, isRouteError?: boolean }> = 
   </div>
 );
 
-const AvailableCategoryCard: React.FC<AvailableCategoryCardProps> = ({ category, requirements, }) => {
-  return (<Card className="w-full max-w-md mb-4 shadow-md transition-shadow hover:shadow-lg dark:border-gray-700"> <CardHeader> <CardTitle className="text-lg font-semibold flex items-center"> <Users className="mr-2 h-5 w-5 text-blue-500" /> {category.name} </CardTitle> <CardDescription> Age Range: {category.min_age} - {category.max_age} years </CardDescription> </CardHeader> <CardContent className="text-sm text-gray-700 dark:text-gray-400 space-y-3">
-    {requirements.length > 0 ? (
+export interface EligibilityStatus {
+  isLoading: boolean;
+  isEligible: boolean | null;
+  error: Error | null;
+}
+
+interface AvailableCategoryCardProps {
+  category: Category;
+  requirements: CategoryRequirement[];
+  userId: Uuid;
+  eligibilityStatus: EligibilityStatus;
+  onRegister: (categoryId: Uuid) => void;
+  isRegistering: boolean;
+}
+
+const AvailableCategoryCard: React.FC<AvailableCategoryCardProps> = ({
+  category,
+  requirements,
+  userId,
+  eligibilityStatus,
+  onRegister,
+  isRegistering,
+}) => {
+
+  const handleRegisterClick = () => {
+    onRegister(category.id_category);
+  };
+
+  const renderFooterContent = () => {
+    if (eligibilityStatus.isLoading) {
+      return (
+        <div className="flex items-center text-sm text-gray-500">
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Checking eligibility...
+        </div>
+      );
+    }
+
+    if (eligibilityStatus.error) {
+      return (
+        <Alert variant="destructive" className="p-3 text-xs">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle className="text-xs font-semibold">Not Eligible</AlertTitle>
+          <AlertDescription>
+            {eligibilityStatus.error.message || "An unknown eligibility error occurred."}
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    if (eligibilityStatus.isEligible === true) {
+      return (
+        <Button
+          size="sm"
+          onClick={handleRegisterClick}
+          disabled={isRegistering}
+        >
+          {isRegistering ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Check className="mr-2 h-4 w-4" />
+          )}
+          {isRegistering ? 'Registering...' : 'Register'}
+        </Button>
+      );
+    }
+
+    return <p className="text-xs text-gray-500">Could not determine eligibility.</p>;
+  };
+
+  return (
+    <Card className="w-full max-w-md mb-4 shadow-md transition-shadow hover:shadow-lg dark:border-gray-700 flex flex-col justify-between"> {/* Ensure footer stays down */}
       <div>
-        <h4 className="font-semibold mb-1 flex items-center">
-          <ListChecks className="mr-2 h-4 w-4 text-gray-500" /> Requirements:
-        </h4>
-        <ul className="list-disc list-inside space-y-1 pl-2">
-          {requirements.map((req) => (
-            <li key={req.id_category_requirement}>
-              {req.requirement_description}
-              <Badge variant="secondary" className="ml-2">
-                Level: {req.required_level}
-              </Badge>
-            </li>
-          ))}
-        </ul>
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold flex items-center">
+            <Users className="mr-2 h-5 w-5 text-blue-500" /> {category.name}
+          </CardTitle>
+          <CardDescription>
+            Age Range: {category.min_age} - {category.max_age} years
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="text-sm text-gray-700 dark:text-gray-400 space-y-3">
+          {requirements.length > 0 ? (
+            <div>
+              <h4 className="font-semibold mb-1 flex items-center">
+                <ListChecks className="mr-2 h-4 w-4 text-gray-500" /> Requirements:
+              </h4>
+              <ul className="list-disc list-inside space-y-1 pl-2">
+                {requirements.map((req) => (
+                  <li key={req.id_category_requirement}>
+                    {req.requirement_description}
+                    <Badge variant="secondary" className="ml-2">
+                      Level: {req.required_level}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p className="italic text-gray-500">No specific requirements listed.</p>
+          )}
+        </CardContent>
       </div>
-    ) : (
-      <p className="italic text-gray-500">No specific requirements listed.</p>
-    )}
-  </CardContent>
-    <CardFooter className="text-xs text-gray-500 dark:text-gray-400 justify-end">
-      Contact an administrator for assignment to this category.
-    </CardFooter>
-  </Card>
+      <CardFooter className="pt-4 border-t dark:border-gray-600 mt-auto flex justify-end">
+        {renderFooterContent()}
+      </CardFooter>
+    </Card>
   );
 };
 

@@ -90,3 +90,15 @@ export async function getUserCategory(categoryId: Uuid, userId: Uuid): Promise<U
 export async function getUserCategories(userId: Uuid): Promise<UserCategory[] | null> {
   return fetchJson<UserCategory[] | null>(`${BASE_URL}/categories/user/${userId}`);
 }
+
+
+export async function registerUserInCategory(categoryId: Uuid, userId: Uuid): Promise<void> {
+  await fetchJson<string>(`${BASE_URL}/categories/${categoryId}/users/${userId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }, // Still good practice to include
+  });
+}
+
+export async function checkUserEligibility(categoryId: Uuid, userId: Uuid): Promise<boolean> {
+  return fetchJson<boolean>(`${BASE_URL}/categories/${categoryId}/users/${userId}/eligible`);
+}

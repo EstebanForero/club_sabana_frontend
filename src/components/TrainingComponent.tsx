@@ -57,7 +57,7 @@ const TrainingComponent: React.FC<Props> = ({ training, enableAdminControls = fa
           <p className='flex items-center'><DollarSign className="mr-2 h-4 w-4 text-muted-foreground" /> <span className="font-medium">Min. Payment:</span> ${training.minimum_payment.toFixed(2)}</p>
         </CardContent>
         {enableAdminControls && (
-          <CardFooter className="flex justify-end gap-2">
+          <CardFooter className="flex justify-end gap-2 flex-wrap">
             {/* View Registrations Button */}
             <Button variant="outline" size="sm" onClick={handleViewRegistrations}>
               <Users className="mr-2 h-4 w-4" /> Registrations

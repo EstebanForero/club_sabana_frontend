@@ -1,4 +1,4 @@
-import { BASE_URL, start_url, Uuid } from './common';
+import { BASE_URL, Uuid } from './common';
 import { fetchJson } from './utils';
 
 export interface Training {
@@ -27,7 +27,7 @@ export interface TrainingRegistration {
 }
 
 export async function createTraining(training: TrainingCreation): Promise<void> {
-  await fetchJson(`${BASE_URL}`, {
+  await fetchJson(`${BASE_URL}/trainings`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(training),
@@ -35,15 +35,15 @@ export async function createTraining(training: TrainingCreation): Promise<void> 
 }
 
 export async function listTrainings(): Promise<Training[]> {
-  return fetchJson<Training[]>(`${BASE_URL}`);
+  return fetchJson<Training[]>(`${BASE_URL}/trainings`);
 }
 
 export async function getTraining(id: Uuid): Promise<Training> {
-  return fetchJson<Training>(`${BASE_URL}/${id}`);
+  return fetchJson<Training>(`${BASE_URL}/trainings/${id}`);
 }
 
 export async function updateTraining(training: Training): Promise<void> {
-  await fetchJson(`${BASE_URL}/${training.id_training}`, {
+  await fetchJson(`${BASE_URL}/trainings/${training.id_training}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(training),
@@ -51,7 +51,7 @@ export async function updateTraining(training: Training): Promise<void> {
 }
 
 export async function deleteTraining(id: Uuid): Promise<string> {
-  return fetchJson<string>(`${BASE_URL}/${id}`, { method: 'DELETE' });
+  return fetchJson<string>(`${BASE_URL}/trainings/${id}`, { method: 'DELETE' });
 }
 
 export async function registerUser(registration: TrainingRegistration): Promise<string> {
@@ -63,7 +63,7 @@ export async function registerUser(registration: TrainingRegistration): Promise<
 }
 
 export async function markAttendance(trainingId: Uuid, userId: Uuid, attended: boolean): Promise<string> {
-  return fetchJson<string>(`/trainings/${trainingId}/attendance/${userId}`, {
+  return fetchJson<string>(`${BASE_URL}/trainings/${trainingId}/attendance/${userId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(attended),
@@ -71,5 +71,19 @@ export async function markAttendance(trainingId: Uuid, userId: Uuid, attended: b
 }
 
 export async function getEligibleTrainings(userId: Uuid): Promise<Training[]> {
-  return fetchJson<Training[]>(`/users/${userId}/eligible-trainings`);
+  return fetchJson<Training[]>(`${BASE_URL}/users/${userId}/eligible-trainings`);
+}
+
+export async function getUserTrainingRegistrations(userId: Uuid): Promise<TrainingRegistration[]> {
+  return fetchJson<TrainingRegistration[]>(`${BASE_URL}/users/${userId}/training-registrations`);
+}
+
+export async function getTrainingRegistrations(trainingId: Uuid): Promise<TrainingRegistration[]> {
+  return fetchJson<TrainingRegistration[]>(`${BASE_URL}/trainings/${trainingId}/registrations`);
+}
+
+export async function deleteTrainingRegistration(trainingId: Uuid, userId: Uuid): Promise<string> {
+  return fetchJson<string>(`${BASE_URL}/trainings/${trainingId}/registrations/${userId}`, {
+    method: 'DELETE',
+  });
 }

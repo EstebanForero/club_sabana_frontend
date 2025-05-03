@@ -1,6 +1,7 @@
 import { URol } from "@/backend/common"
 import { UseNavigateResult } from "@tanstack/react-router"
 import { clsx, type ClassValue } from "clsx"
+import { format } from "date-fns"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -23,6 +24,10 @@ export function navigateToRol(user_rol: URol, navigate: UseNavigateResult<string
     })
   }
 }
+
+export const formatDate = (dateString: string | null | undefined, formatString = 'PPp'): string => {
+  if (!dateString) return 'N/A'; try { const date = new Date(dateString.replace(' ', 'T')); if (isNaN(date.getTime())) return dateString; return format(date, formatString); } catch (error) { return dateString; }
+};
 
 export function getCurrentDateTimeString(): string {
   const now = new Date();

@@ -111,3 +111,23 @@ export async function getUserAttendance(
     `${base_url}/users/${userId}/attendance`
   );
 }
+
+export async function deleteTournamentAttendance(
+  tournamentId: Uuid,
+  userId: Uuid
+): Promise<string> {
+  return fetchJson<string>(
+    `${base_url}/${tournamentId}/attendance/${userId}`,
+    { method: "DELETE" }
+  );
+}
+
+export async function deleteTournamentRegistration(
+  tournamentId: Uuid,
+  userId: Uuid
+): Promise<string> {
+  return fetchJson<string>(
+    `${base_url}/${tournamentId}/registrations/${userId}`,
+    { method: "DELETE" }
+  );
+}

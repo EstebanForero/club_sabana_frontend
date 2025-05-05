@@ -23,7 +23,7 @@ export interface TrainingRegistration {
   id_user: Uuid;
   registration_datetime: string; // YYYY-MM-DD HH:MM:SS
   attended: boolean;
-  attendance_datetime: string;   // YYYY-MM-DD HH:MM:SS
+  attendance_datetime: string | null;   // YYYY-MM-DD HH:MM:SS
 }
 
 export async function createTraining(training: TrainingCreation): Promise<void> {
@@ -55,7 +55,7 @@ export async function deleteTraining(id: Uuid): Promise<string> {
 }
 
 export async function registerUser(registration: TrainingRegistration): Promise<string> {
-  return fetchJson<string>(`${BASE_URL}/${registration.id_training}/register`, {
+  return fetchJson<string>(`${BASE_URL}/trainings/${registration.id_training}/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(registration),

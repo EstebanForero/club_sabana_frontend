@@ -140,7 +140,7 @@ const TrainingManagementDialog: React.FC<TrainingManagementDialogProps> = ({
                       id={`attendance-${reg.id_user}`}
                       checked={reg.attended}
                       onCheckedChange={() => handleAttendanceChange(reg.id_user, reg.attended)}
-                      disabled={isUpdatingThisUser} // Disable while this user's attendance is being updated
+                      disabled={isUpdatingThisUser}
                       aria-label={`Mark attendance for user ${reg.id_user}`}
                     />
                     {reg.attended
@@ -161,7 +161,7 @@ const TrainingManagementDialog: React.FC<TrainingManagementDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg"> {/* Adjust width if needed */}
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Manage Registrations</DialogTitle>
           <DialogDescription>
@@ -171,7 +171,6 @@ const TrainingManagementDialog: React.FC<TrainingManagementDialogProps> = ({
 
         {renderContent()}
 
-        {/* Optional Footer with Close Button */}
         <DialogFooter className="mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
         </DialogFooter>

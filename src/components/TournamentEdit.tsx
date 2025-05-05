@@ -1,4 +1,3 @@
-// src/components/tournaments/TournamentEdit.tsx
 import React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -19,7 +18,7 @@ import TournamentForm, { TournamentFormData } from './TournamentForm';
 import { Uuid } from '@/backend/common';
 
 interface TournamentEditProps {
-  tournamentId: Uuid | null; // ID of the tournament to edit
+  tournamentId: Uuid | null;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -40,12 +39,11 @@ const TournamentEdit: React.FC<TournamentEditProps> = ({
 
   const updateMutation = useMutation({
     mutationFn: updateTournament,
-    onSuccess: (_, updatedTournament) => { // API returns void, but we get the input
+    onSuccess: (_, updatedTournament) => {
       toast.success(`Tournament "${updatedTournament.name}" updated successfully!`);
-      // Invalidate both the list and the specific tournament query
       queryClient.invalidateQueries({ queryKey: ['tournaments'] });
       queryClient.invalidateQueries({ queryKey: ['tournaments', updatedTournament.id_tournament] });
-      onOpenChange(false); // Close dialog on success
+      onOpenChange(false);
     },
     onError: (error: Error) => {
       console.error("Error updating tournament:", error);
@@ -60,7 +58,7 @@ const TournamentEdit: React.FC<TournamentEditProps> = ({
     }
     console.log("Submitting Tournament Update:", values);
     const updatedTournamentData: Tournament = {
-      id_tournament: tournamentId, // Include the ID for the update request
+      id_tournament: tournamentId,
       name: values.name,
       id_category: values.id_category as Uuid,
       start_datetime: values.start_datetime,
@@ -74,10 +72,9 @@ const TournamentEdit: React.FC<TournamentEditProps> = ({
   };
 
   const renderContent = () => {
-    if (!isOpen) return null; // Don't render content if closed
+    if (!isOpen) return null;
 
     if (isLoadingTournament) {
-      // Basic Skeleton Loading State
       return (
         <div className="space-y-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
@@ -131,7 +128,6 @@ const TournamentEdit: React.FC<TournamentEditProps> = ({
 
         {renderContent()}
 
-        {/* Footer only shown when not loading/error */}
         {!isLoadingTournament && !isError && tournamentData && (
           <DialogFooter>
             <Button
@@ -144,14 +140,13 @@ const TournamentEdit: React.FC<TournamentEditProps> = ({
             </Button>
             <Button
               type="submit"
-              form="tournament-form-edit" // Link button to the form ID used in TournamentForm for 'edit' mode
+              form="tournament-form-edit"
               disabled={updateMutation.isLoading}
             >
               {updateMutation.isLoading ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogFooter>
         )}
-        {/* Show cancel button even on error */}
         {(isError || !tournamentData && !isLoadingTournament) && (
           <DialogFooter>
             <Button

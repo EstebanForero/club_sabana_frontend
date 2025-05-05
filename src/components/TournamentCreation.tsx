@@ -13,8 +13,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 
-import { createTournament, TournamentCreation as TournamentCreationData } from '@/backend/tournament_backend'; // Adjust path
-import TournamentForm, { TournamentFormData } from './TournamentForm'; // Import the refactored form
+import { createTournament, TournamentCreation as TournamentCreationData } from '@/backend/tournament_backend';
+import TournamentForm, { TournamentFormData } from './TournamentForm';
 import { Uuid } from '@/backend/common';
 
 const TournamentCreation = () => {

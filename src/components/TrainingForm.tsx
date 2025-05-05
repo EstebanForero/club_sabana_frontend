@@ -1,4 +1,3 @@
-// src/components/trainings/TrainingForm.tsx
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,7 +15,7 @@ const trainingFormSchema = z.object({
   id_category: z.string().uuid({ message: 'Please select a valid category.' }),
   start_datetime: z.string().regex(datetimeRegex, { message: 'Start datetime: YYYY-MM-DD HH:MM:SS' }),
   end_datetime: z.string().regex(datetimeRegex, { message: 'End datetime: YYYY-MM-DD HH:MM:SS' }),
-  minimum_payment: z.preprocess( // Handle potential string input from number field
+  minimum_payment: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '') ? parseFloat(val) : val,
     z.number().positive({ message: 'Minimum payment must be a positive number.' }).optional().or(z.literal(0)) // Allow 0 or positive
   ),
@@ -27,9 +26,9 @@ export type TrainingFormData = z.infer<typeof trainingFormSchema>;
 interface TrainingFormProps {
   mode: 'create' | 'edit';
   initialData?: Training;
-  onSubmit: (data: TrainingFormData) => void; // Pass the specific form data type
+  onSubmit: (data: TrainingFormData) => void;
   isLoading: boolean;
-  onCancel: () => void; // Keep onCancel if needed within dialogs
+  onCancel: () => void;
 }
 
 const TrainingForm: React.FC<TrainingFormProps> = ({
@@ -45,11 +44,10 @@ const TrainingForm: React.FC<TrainingFormProps> = ({
       id_category: initialData?.id_category || undefined,
       start_datetime: initialData?.start_datetime || '',
       end_datetime: initialData?.end_datetime || '',
-      minimum_payment: initialData?.minimum_payment ?? 0, // Default to 0 if not provided
+      minimum_payment: initialData?.minimum_payment ?? 0,
     },
   });
 
-  // Reset form if initialData changes
   useEffect(() => {
     if (initialData) {
       form.reset({
@@ -73,7 +71,6 @@ const TrainingForm: React.FC<TrainingFormProps> = ({
   return (
     <Form {...form}>
       <form id={`training-form-${mode}`} onSubmit={form.handleSubmit(handleSubmit)} className="grid gap-4 py-4">
-        {/* Name Field */}
         <FormField control={form.control} name="name" render={({ field }) => (
           <FormItem className="grid grid-cols-4 items-center gap-4">
             <FormLabel className="text-right">Name</FormLabel>
@@ -82,7 +79,6 @@ const TrainingForm: React.FC<TrainingFormProps> = ({
           </FormItem>
         )} />
 
-        {/* Category Selector */}
         <FormField control={form.control} name="id_category" render={({ field, fieldState }) => (
           <FormItem className="grid grid-cols-4 items-center gap-4">
             <FormLabel className="text-right">Category</FormLabel>
@@ -99,7 +95,6 @@ const TrainingForm: React.FC<TrainingFormProps> = ({
           </FormItem>
         )} />
 
-        {/* Start DateTime */}
         <FormField control={form.control} name="start_datetime" render={({ field }) => (
           <FormItem className="grid grid-cols-4 items-center gap-4">
             <FormLabel className="text-right">Start Time</FormLabel>
@@ -108,7 +103,6 @@ const TrainingForm: React.FC<TrainingFormProps> = ({
           </FormItem>
         )} />
 
-        {/* End DateTime */}
         <FormField control={form.control} name="end_datetime" render={({ field }) => (
           <FormItem className="grid grid-cols-4 items-center gap-4">
             <FormLabel className="text-right">End Time</FormLabel>
@@ -117,7 +111,6 @@ const TrainingForm: React.FC<TrainingFormProps> = ({
           </FormItem>
         )} />
 
-        {/* Minimum Payment */}
         <FormField control={form.control} name="minimum_payment" render={({ field }) => (
           <FormItem className="grid grid-cols-4 items-center gap-4">
             <FormLabel className="text-right">Min. Payment ($)</FormLabel>

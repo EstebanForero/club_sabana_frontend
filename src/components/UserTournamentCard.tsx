@@ -1,4 +1,3 @@
-// src/components/tournaments/UserTournamentCard.tsx
 import React from 'react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
@@ -10,33 +9,31 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Tournament, TournamentRegistration } from '@/backend/tournament_backend'; // Adjust path
-import { Uuid } from '@/backend/common'; // Adjust path
-import { CalendarDays, Trophy } from 'lucide-react'; // Add relevant icons
+import { Tournament, TournamentRegistration } from '@/backend/tournament_backend';
+import { Uuid } from '@/backend/common';
+import { CalendarDays, Trophy } from 'lucide-react';
 import { getCurrentDateTimeString } from '@/lib/utils';
 
-// Same date formatting helper
 const formatDate = (dateString: string | null | undefined): string => {
   if (!dateString) return 'N/A';
   try {
-    // Replace space with 'T' for better cross-browser compatibility with new Date()
     const date = new Date(dateString.replace(' ', 'T'));
     if (isNaN(date.getTime())) {
       console.warn("Invalid date string received:", dateString);
-      return dateString; // Return original if invalid
+      return dateString;
     }
-    // Format: Sep 21, 2023, 4:30 PM (adjust 'PPp' as needed)
+
     return format(date, 'PPp');
   } catch (error) {
     console.error("Date formatting error:", error);
-    return dateString; // Fallback
+    return dateString;
   }
 };
 
 interface UserTournamentCardProps {
   tournament: Tournament;
   userId: Uuid;
-  onRegister: (registrationData: TournamentRegistration) => void; // Callback for registration
+  onRegister: (registrationData: TournamentRegistration) => void;
   isRegistering: boolean;
 }
 
@@ -45,14 +42,13 @@ const UserTournamentCard: React.FC<UserTournamentCardProps> = ({
   userId,
   onRegister,
   isRegistering,
-  // isRegistered = false, // Default if using
 }) => {
 
   const handleRegisterClick = () => {
     const registrationData: TournamentRegistration = {
       id_tournament: tournament.id_tournament,
       id_user: userId,
-      registration_datetime: getCurrentDateTimeString(), // Get current time
+      registration_datetime: getCurrentDateTimeString(),
     };
     onRegister(registrationData);
   };
@@ -63,7 +59,6 @@ const UserTournamentCard: React.FC<UserTournamentCardProps> = ({
         <CardTitle className="text-lg font-semibold flex items-center">
           <Trophy className="mr-2 h-5 w-5 text-yellow-500" /> {tournament.name}
         </CardTitle>
-        {/* TODO: Fetch and display category *name* instead of ID for better UX */}
         <CardDescription>Category ID: {tournament.id_category}</CardDescription>
       </CardHeader>
       <CardContent className="text-sm text-gray-700 dark:text-gray-400 space-y-2">
@@ -77,18 +72,13 @@ const UserTournamentCard: React.FC<UserTournamentCardProps> = ({
         </div>
       </CardContent>
       <CardFooter className="flex justify-end">
-        {/* Add logic here if you implement isRegistered check */}
-        {/* {isRegistered ? (
-                    <span className="text-sm font-medium text-green-600">Registered</span>
-                ) : ( */}
         <Button
           onClick={handleRegisterClick}
-          disabled={isRegistering} // Disable button if registration is pending for this card
+          disabled={isRegistering}
           size="sm"
         >
           {isRegistering ? 'Registering...' : 'Register'}
         </Button>
-        {/* )} */}
       </CardFooter>
     </Card>
   );

@@ -25,8 +25,15 @@ export function navigateToRol(user_rol: URol, navigate: UseNavigateResult<string
   }
 }
 
-export const formatDate = (dateString: string | null | undefined, formatString = 'PPp'): string => {
-  if (!dateString) return 'N/A'; try { const date = new Date(dateString.replace(' ', 'T')); if (isNaN(date.getTime())) return dateString; return format(date, formatString); } catch (error) { return dateString; }
+export const formatDate = (dateString: string | null | undefined, formatString = 'PPP'): string => {
+  if (!dateString) return 'N/A';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString || 'N/A';
+    return format(date, formatString);
+  } catch (error) {
+    return dateString || 'N/A';
+  }
 };
 
 export function getCurrentDateTimeString(): string {

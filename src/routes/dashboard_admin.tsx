@@ -1,7 +1,7 @@
 import { AppSidebar, SidebarLink } from '@/components/AppSideBar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { ChartBarStacked, CreditCard, Dumbbell, Mail, ShieldUser, Trophy, UserPen } from 'lucide-react';
+import { ChartBarStacked, CreditCard, Dumbbell, Mail, ShieldUser, Trophy, UserPen, UsersRound } from 'lucide-react';
 
 export const Route = createFileRoute('/dashboard_admin')({
   component: RouteComponent,
@@ -13,7 +13,7 @@ const sidebarLinks: SidebarLink[] = [
   { icon: ShieldUser, text: "Role management", to: "/dashboard_admin/role_management" },
   { icon: ChartBarStacked, text: "Category Management", to: "/dashboard_admin/category_management" },
   { icon: Trophy, text: "Tournament management", to: "/dashboard_admin/tournament_management" },
-  { icon: Dumbbell, text: "Training management", to: "/dashboard_admin/training_management" },
+  { icon: UsersRound, text: "User management", to: "/dashboard_admin/user_management" },
 ];
 
 function RouteComponent() {

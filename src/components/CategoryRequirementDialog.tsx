@@ -29,7 +29,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Corrected Imports
 import { ALL_LEVELS, Uuid, LevelName } from '@/backend/common';
 import {
   CategoryRequirement,

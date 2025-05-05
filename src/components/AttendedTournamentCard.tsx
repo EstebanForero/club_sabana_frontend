@@ -1,4 +1,3 @@
-// src/components/AttendedTournamentCard.tsx
 import React from 'react';
 import { format } from 'date-fns';
 import {
@@ -48,7 +47,6 @@ const AttendedTournamentCard: React.FC<AttendedTournamentCardProps> = ({
           {formatDate(tournament.start_datetime, 'P')} - {formatDate(tournament.end_datetime, 'P')}
         </CardDescription>
       </CardHeader>
-      {/* Content can show tournament dates if needed, but footer is main focus */}
       {/* <CardContent className="text-sm text-gray-700 dark:text-gray-400 space-y-1 pb-2">
                 <div className="flex items-center text-xs">
                     <CalendarDays className="mr-1.5 h-3 w-3" />

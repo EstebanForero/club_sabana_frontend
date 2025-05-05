@@ -1,4 +1,3 @@
-// src/components/tournaments/RegisteredTournamentCard.tsx
 import React from 'react';
 import { format } from 'date-fns';
 import {
@@ -9,8 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Tournament } from '@/backend/tournament_backend'; // Adjust path
-import { CalendarDays, Trophy, CheckCircle } from 'lucide-react'; // Add relevant icons
+import { Tournament } from '@/backend/tournament_backend';
+import { CalendarDays, Trophy, CheckCircle } from 'lucide-react';
 
 const formatDate = (dateString: string | null | undefined, formatString = 'PPp'): string => {
   if (!dateString) return 'N/A';
@@ -56,7 +55,7 @@ const RegisteredTournamentCard: React.FC<RegisteredTournamentCardProps> = ({
       </CardContent>
       <CardFooter className="text-sm text-green-600 dark:text-green-400 font-medium flex items-center justify-end">
         <CheckCircle className="mr-2 h-4 w-4" />
-        Registered on: {formatDate(registrationDate, 'PPp')} {/* Format registration date too */}
+        Registered on: {formatDate(registrationDate, 'PPp')}
       </CardFooter>
     </Card>
   );

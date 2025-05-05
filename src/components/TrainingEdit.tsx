@@ -1,4 +1,3 @@
-// src/components/trainings/TrainingEdit.tsx
 import React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -6,7 +5,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from "@/components/ui/skeleton";
-import { getTraining, updateTraining, Training } from '@/backend/training_backend'; // Adjust path
+import { getTraining, updateTraining, Training } from '@/backend/training_backend';
 import TrainingForm, { TrainingFormData } from './TrainingForm';
 import { Uuid } from '@/backend/common';
 
@@ -20,7 +19,7 @@ const TrainingEdit: React.FC<TrainingEditProps> = ({ trainingId, isOpen, onOpenC
   const queryClient = useQueryClient();
 
   const { data: trainingData, isLoading: isLoadingTraining, isError, error } = useQuery({
-    queryKey: ['training', trainingId], // Unique key per training
+    queryKey: ['training', trainingId],
     queryFn: () => getTraining(trainingId!),
     enabled: !!trainingId && isOpen,
     staleTime: 5 * 60 * 1000,
@@ -28,12 +27,11 @@ const TrainingEdit: React.FC<TrainingEditProps> = ({ trainingId, isOpen, onOpenC
 
   const updateMutation = useMutation({
     mutationFn: updateTraining,
-    onSuccess: (_, updatedTrainingInput) => { // API returns void
-      // We don't get the full updated object back, use input or fetched data
+    onSuccess: (_, updatedTrainingInput) => {
       const name = updatedTrainingInput.name || trainingData?.name || 'Training';
       toast.success(`Training "${name}" updated successfully!`);
-      queryClient.invalidateQueries({ queryKey: ['trainings'] }); // Invalidate list
-      queryClient.invalidateQueries({ queryKey: ['training', trainingId] }); // Invalidate specific item
+      queryClient.invalidateQueries({ queryKey: ['trainings'] });
+      queryClient.invalidateQueries({ queryKey: ['training', trainingId] });
       onOpenChange(false);
     },
     onError: (error: Error) => {
@@ -47,7 +45,7 @@ const TrainingEdit: React.FC<TrainingEditProps> = ({ trainingId, isOpen, onOpenC
       return;
     }
     const updatedTrainingData: Training = {
-      id_training: trainingId, // Include the ID
+      id_training: trainingId,
       name: values.name,
       id_category: values.id_category as Uuid,
       start_datetime: values.start_datetime,
@@ -94,7 +92,7 @@ const TrainingEdit: React.FC<TrainingEditProps> = ({ trainingId, isOpen, onOpenC
             </Button>
           </DialogFooter>
         )}
-        {(isError || (!trainingData && !isLoadingTraining)) && ( // Error state footer
+        {(isError || (!trainingData && !isLoadingTraining)) && (
           <DialogFooter><Button type="button" variant="ghost" onClick={handleCancel}>Close</Button></DialogFooter>
         )}
       </DialogContent>

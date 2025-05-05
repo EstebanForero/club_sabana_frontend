@@ -13,7 +13,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  // DialogTrigger is handled by the parent component usually
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,16 +30,15 @@ import {
   CategoryCreation,
   createCategory,
   updateCategory,
-} from '@/backend/category_backend'; // Adjust path if needed
+} from '@/backend/category_backend';
 
-// Validation Schema
 const categoryFormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters long.' }).max(50, { message: 'Name cannot exceed 50 characters.' }),
   min_age: z.coerce.number().int().nonnegative({ message: 'Minimum age must be 0 or greater.' }), // coerce handles string input
   max_age: z.coerce.number().int().positive({ message: 'Maximum age must be greater than 0.' }),
 }).refine(data => data.max_age >= data.min_age, {
   message: "Maximum age must be greater than or equal to minimum age.",
-  path: ["max_age"], // Point error to max_age field
+  path: ["max_age"],
 });
 
 type CategoryFormData = z.infer<typeof categoryFormSchema>;
@@ -48,8 +46,8 @@ type CategoryFormData = z.infer<typeof categoryFormSchema>;
 type Props = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  categoryToEdit?: Category | null; // Pass category data if editing
-  onSuccess?: () => void; // Optional callback on success
+  categoryToEdit?: Category | null;
+  onSuccess?: () => void;
 };
 
 const CategoryFormDialog = ({ isOpen, onOpenChange, categoryToEdit, onSuccess }: Props) => {
@@ -61,11 +59,10 @@ const CategoryFormDialog = ({ isOpen, onOpenChange, categoryToEdit, onSuccess }:
     defaultValues: {
       name: '',
       min_age: 0,
-      max_age: 18, // Sensible default
+      max_age: 18,
     },
   });
 
-  // Reset form when dialog opens or categoryToEdit changes
   useEffect(() => {
     if (isOpen) {
       if (isEditing && categoryToEdit) {
@@ -75,7 +72,7 @@ const CategoryFormDialog = ({ isOpen, onOpenChange, categoryToEdit, onSuccess }:
           max_age: categoryToEdit.max_age,
         });
       } else {
-        form.reset({ // Reset to defaults for creation
+        form.reset({
           name: '',
           min_age: 0,
           max_age: 18,
@@ -89,8 +86,8 @@ const CategoryFormDialog = ({ isOpen, onOpenChange, categoryToEdit, onSuccess }:
     onSuccess: () => {
       toast.success('Category created successfully!');
       queryClient.invalidateQueries({ queryKey: ['categories'] });
-      onOpenChange(false); // Close dialog
-      onSuccess?.(); // Call optional success callback
+      onOpenChange(false);
+      onSuccess?.();
     },
     onError: (error: Error) => {
       console.error("Error creating category:", error);
@@ -99,15 +96,12 @@ const CategoryFormDialog = ({ isOpen, onOpenChange, categoryToEdit, onSuccess }:
   });
 
   const updateMutation = useMutation({
-    mutationFn: updateCategory, // The backend function returns the updated category
+    mutationFn: updateCategory,
     onSuccess: (updatedCategory) => {
       toast.success(`Category "${updatedCategory.name}" updated successfully!`);
-      // Optimistic update or invalidation
       queryClient.invalidateQueries({ queryKey: ['categories'] });
-      // Optionally update specific category query if needed:
-      // queryClient.setQueryData(['category', updatedCategory.id_category], updatedCategory);
-      onOpenChange(false); // Close dialog
-      onSuccess?.(); // Call optional success callback
+      onOpenChange(false);
+      onSuccess?.();
     },
     onError: (error: Error) => {
       console.error("Error updating category:", error);
@@ -121,7 +115,7 @@ const CategoryFormDialog = ({ isOpen, onOpenChange, categoryToEdit, onSuccess }:
     console.log("Submitting category form:", values);
     if (isEditing && categoryToEdit) {
       const categoryData: Category = {
-        ...categoryToEdit, // Keep existing ID and other potential fields
+        ...categoryToEdit,
         name: values.name,
         min_age: values.min_age,
         max_age: values.max_age,
@@ -147,7 +141,6 @@ const CategoryFormDialog = ({ isOpen, onOpenChange, categoryToEdit, onSuccess }:
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          {/* Use `noValidate` to disable default browser validation and rely solely on RHF/Zod */}
           <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="grid gap-4 py-4">
             <FormField
               control={form.control}
@@ -158,7 +151,6 @@ const CategoryFormDialog = ({ isOpen, onOpenChange, categoryToEdit, onSuccess }:
                   <FormControl>
                     <Input {...field} className="col-span-3" placeholder="e.g., Junior Division" />
                   </FormControl>
-                  {/* Put message below input for better layout */}
                   <FormMessage className="col-start-2 col-span-3 text-sm" />
                 </FormItem>
               )}

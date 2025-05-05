@@ -1,4 +1,3 @@
-// src/components/tournaments/TournamentComponent.tsx
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -8,7 +7,7 @@ import { Tournament, deleteTournament } from '@/backend/tournament_backend';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Pencil, Trash2, Eye } from 'lucide-react'; // <-- Add Eye icon
+import { Pencil, Trash2, Eye } from 'lucide-react';
 import { Uuid } from '@/backend/common';
 import TournamentEdit from './TournamentEdit';
 import AdminTournamentDetailsDialog from './AdminTournamentDetailsDialog';
@@ -16,20 +15,31 @@ import { formatDate } from '@/lib/utils';
 
 type Props = {
   tournament: Tournament;
-  enableAdminControls?: boolean; // Keep this prop, used for Edit/Delete/View
+  enableAdminControls?: boolean;
 };
 
 const TournamentComponent = ({ tournament, enableAdminControls = false }: Props) => {
   const queryClient = useQueryClient();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false); // <-- State for Admin Details Dialog
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
-  // deleteMutation (keep as is)
-  const deleteMutation = useMutation({ /* ... */ });
-  const handleDelete = () => { /* ... */ };
+  const deleteMutation = useMutation({
+    mutationFn: deleteTournament,
+    onSuccess: (message) => {
+      toast.success(message || 'Tournament deleted successfully!');
+      queryClient.invalidateQueries({ queryKey: ['tournaments'] });
+    },
+    onError: (error: Error) => {
+      console.error("Error deleting tournament:", error);
+      toast.error(`Failed to delete tournament: ${error.message || 'Unknown error'}`);
+    },
+  });
+
+  const handleDelete = () => {
+    deleteMutation.mutate(tournament.id_tournament);
+  };
   const handleEdit = () => setIsEditDialogOpen(true);
 
-  // --- Handler for Details Dialog ---
   const handleViewDetails = () => {
     setIsDetailsDialogOpen(true);
   };
@@ -37,7 +47,6 @@ const TournamentComponent = ({ tournament, enableAdminControls = false }: Props)
   return (
     <>
       <Card className="w-full max-w-md mb-4 shadow-md">
-        {/* CardHeader and CardContent (keep as is) */}
         <CardHeader>
           <CardTitle className="text-lg font-semibold">{tournament.name}</CardTitle>
           <CardDescription>Category ID: {tournament.id_category}</CardDescription>
@@ -65,7 +74,10 @@ const TournamentComponent = ({ tournament, enableAdminControls = false }: Props)
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
-                {/* ... */}
+                <AlertDialogTitle>
+                  Delete tournament
+                </AlertDialogTitle>
+                you are sure, you want to delete the "{tournament.name}" tournament?
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
@@ -78,16 +90,14 @@ const TournamentComponent = ({ tournament, enableAdminControls = false }: Props)
         )}
       </Card>
 
-      {/* Edit Dialog (keep as is) */}
       <TournamentEdit
         tournamentId={tournament.id_tournament}
         isOpen={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
       />
 
-      {/* --- NEW Admin Details Dialog --- */}
       <AdminTournamentDetailsDialog
-        tournamentId={tournament.id_tournament} // Pass the same ID
+        tournamentId={tournament.id_tournament}
         isOpen={isDetailsDialogOpen}
         onOpenChange={setIsDetailsDialogOpen}
       />

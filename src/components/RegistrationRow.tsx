@@ -1,4 +1,3 @@
-// src/components/tournaments/admin/RegistrationRow.tsx
 import React from 'react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,6 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-// Helper (if not global)
 const formatDate = (dateString: string | null | undefined, formatString = 'Pp'): string => {
   if (!dateString) return 'N/A';
   try {
@@ -23,8 +21,8 @@ const formatDate = (dateString: string | null | undefined, formatString = 'Pp'):
 interface RegistrationRowProps {
   registration: TournamentRegistration;
   onDelete: (userId: Uuid) => void;
-  isDeleting: boolean; // Is deletion pending for *this* row?
-  deleteError: Error | null; // Any error from the last delete attempt for *this* row
+  isDeleting: boolean;
+  deleteError: Error | null;
 }
 
 const RegistrationRow: React.FC<RegistrationRowProps> = ({
@@ -38,7 +36,6 @@ const RegistrationRow: React.FC<RegistrationRowProps> = ({
       <div className="flex items-center space-x-3">
         <UserCircle className="h-5 w-5 text-gray-500 flex-shrink-0" />
         <div>
-          {/* TODO: Fetch and display user's actual name */}
           <p className="text-sm font-medium">{registration.id_user}</p>
           <p className="text-xs text-muted-foreground flex items-center">
             <CalendarClock className="h-3 w-3 mr-1" />

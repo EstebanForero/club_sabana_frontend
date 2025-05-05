@@ -9,9 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getTraining, getTrainingRegistrations, deleteTrainingRegistration, Training, TrainingRegistration } from '@/backend/training_backend'; // Adjust paths
+import { getTraining, getTrainingRegistrations, deleteTrainingRegistration, Training, TrainingRegistration } from '@/backend/training_backend';
 import { Uuid } from '@/backend/common';
-import AdminTrainingRegistrationRow from './AdminTrainingRegistrationRow'; // Import admin row
+import AdminTrainingRegistrationRow from './AdminTrainingRegistrationRow';
 import { AlertTriangle } from 'lucide-react';
 
 interface AdminTrainingRegistrationsDialogProps {
@@ -25,17 +25,15 @@ const AdminTrainingRegistrationsDialog: React.FC<AdminTrainingRegistrationsDialo
   const [deletingUserId, setDeletingUserId] = useState<Uuid | null>(null);
   const [rowError, setRowError] = useState<{ userId: Uuid, error: Error } | null>(null);
 
-  // Fetch Training Details (Optional, for context)
   const { data: training, isLoading: isLoadingDetails } = useQuery({
-    queryKey: ['adminTrainingDetails', trainingId], // Distinct key
+    queryKey: ['adminTrainingDetails', trainingId],
     queryFn: () => getTraining(trainingId!),
     enabled: !!trainingId && isOpen,
     staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch Registrations
   const { data: registrations, isLoading: isLoadingRegs, refetch } = useQuery({
-    queryKey: ['adminTrainingRegistrations', trainingId], // Distinct key
+    queryKey: ['adminTrainingRegistrations', trainingId],
     queryFn: () => getTrainingRegistrations(trainingId!),
     enabled: !!trainingId && isOpen,
     staleTime: 30 * 1000,
@@ -43,7 +41,6 @@ const AdminTrainingRegistrationsDialog: React.FC<AdminTrainingRegistrationsDialo
 
   const isLoading = isLoadingDetails || isLoadingRegs;
 
-  // Delete Mutation
   const deleteRegMutation = useMutation({
     mutationFn: ({ trainingId, userId }: { trainingId: Uuid, userId: Uuid }) =>
       deleteTrainingRegistration(trainingId, userId),
@@ -51,8 +48,6 @@ const AdminTrainingRegistrationsDialog: React.FC<AdminTrainingRegistrationsDialo
       toast.success(message || `Registration deleted for ${variables.userId}`);
       setRowError(null);
       queryClient.invalidateQueries({ queryKey: ['adminTrainingRegistrations', trainingId] });
-      // Refetch might be slightly faster UI update than invalidation alone
-      // refetch();
     },
     onError: (error: Error, variables) => {
       setRowError({ userId: variables.userId, error });
@@ -70,7 +65,6 @@ const AdminTrainingRegistrationsDialog: React.FC<AdminTrainingRegistrationsDialo
     deleteRegMutation.mutate({ trainingId, userId });
   };
 
-  // Render Helper
   const formatDate = (dateString: string | null | undefined, formatString = 'PPp'): string => {
     if (!dateString) return 'N/A'; try { const date = new Date(dateString.replace(' ', 'T')); if (isNaN(date.getTime())) return dateString; return format(date, formatString); } catch (error) { return dateString; }
   };
@@ -83,7 +77,7 @@ const AdminTrainingRegistrationsDialog: React.FC<AdminTrainingRegistrationsDialo
     if (!registrations || registrations.length === 0) {
       return <p className="text-center text-muted-foreground py-6">No registrations found for this training.</p>;
     }
-    // Optional: Sort registrations, e.g., by registration date
+
     const sortedRegistrations = [...registrations].sort((a, b) =>
       new Date(b.registration_datetime).getTime() - new Date(a.registration_datetime).getTime()
     );
@@ -93,7 +87,7 @@ const AdminTrainingRegistrationsDialog: React.FC<AdminTrainingRegistrationsDialo
         <div className="divide-y dark:divide-gray-700">
           {sortedRegistrations.map((reg) => (
             <AdminTrainingRegistrationRow
-              key={reg.id_user} // Assuming user can only register once per training
+              key={reg.id_user}
               registration={reg}
               onDelete={handleDeleteRegistration}
               isDeleting={deletingUserId === reg.id_user}
@@ -108,6 +102,9 @@ const AdminTrainingRegistrationsDialog: React.FC<AdminTrainingRegistrationsDialo
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px]">
+        <DialogTitle>
+          Admin dialog to manage the registrations
+        </DialogTitle>
         <DialogHeader>
           {isLoadingDetails || !training ? <Skeleton className="h-6 w-3/4" /> : <DialogTitle>Registrations: {training.name}</DialogTitle>}
           <DialogDescription>
@@ -120,10 +117,10 @@ const AdminTrainingRegistrationsDialog: React.FC<AdminTrainingRegistrationsDialo
           </DialogDescription>
         </DialogHeader>
 
-        {isLoading && !training ? ( // Main skeleton if core details loading
+        {isLoading && !training ? (
           <div className="space-y-4 py-6"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>
         ) : (
-          renderContent() // Render registration list or empty state
+          renderContent()
         )}
 
         <DialogFooter className="mt-6">

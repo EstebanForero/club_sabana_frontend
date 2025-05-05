@@ -1,8 +1,7 @@
-// src/components/tournaments/TournamentAttendanceDialog.tsx
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { parse, isWithinInterval, isValid, format as formatDateFn, formatDate } from 'date-fns'; // Import date-fns helpers
+import { parse, isWithinInterval, isValid, format as formatDateFn, formatDate } from 'date-fns';
 
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter
@@ -19,11 +18,11 @@ import {
   TournamentRegistration, TournamentAttendance,
   Tournament, getTournament,
   getTournamentAttendance
-} from '@/backend/tournament_backend'; // Adjust paths
+} from '@/backend/tournament_backend';
 import { Uuid } from '@/backend/common';
 import AttendanceUserRow from './AttendanceUserRow';
 import { AlertTriangle, Info, CalendarIcon, ListOrdered, X } from 'lucide-react';
-import { Separator } from '@/components/ui/separator'; // For visual separation
+import { Separator } from '@/components/ui/separator';
 
 interface TournamentAttendanceDialogProps {
   tournamentId: Uuid | null;
@@ -48,16 +47,15 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
   const [selectedUserId, setSelectedUserId] = useState<Uuid | null>(null);
   const [attendanceDate, setAttendanceDate] = useState('');
   const [attendancePosition, setAttendancePosition] = useState('');
-  const [formError, setFormError] = useState<string | null>(null); // For form-specific errors
+  const [formError, setFormError] = useState<string | null>(null);
 
   const { data: tournamentDetails, isLoading: isLoadingDetails } = useQuery({
     queryKey: ['tournamentDetails', tournamentId],
     queryFn: () => getTournament(tournamentId!),
-    enabled: !!tournamentId && isOpen, // Always fetch details when dialog opens
+    enabled: !!tournamentId && isOpen,
     staleTime: 5 * 60 * 1000,
   });
 
-  // Registrations Query (unchanged)
   const { data: registrations, isLoading: isLoadingRegs } = useQuery({
     queryKey: ['tournamentRegistrations', tournamentId],
     queryFn: () => getTournamentRegistrations(tournamentId!),
@@ -70,15 +68,12 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
     enabled: !!tournamentId && isOpen, staleTime: 1 * 60 * 1000,
   });
 
-  // --- Derived State ---
   const isLoading = isLoadingDetails || isLoadingRegs || isLoadingAtt;
   const tournamentStartDate = tournamentDetails?.start_datetime;
   const tournamentEndDate = tournamentDetails?.end_datetime;
   const effectiveTournamentName = tournamentDetails?.name || 'Tournament';
 
-  // --- Memoized User List (unchanged sorting logic) ---
   const combinedUsers = useMemo<CombinedUserData[]>(() => {
-    // ... (same logic as before) ...
     if (!registrations) return [];
     const attendanceMap = new Map<Uuid, TournamentAttendance>();
     attendances?.forEach(att => attendanceMap.set(att.id_user, att));
@@ -91,36 +86,30 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
     });
   }, [registrations, attendances]);
 
-  // --- Reset Form on Selection Change or Dialog Close ---
   useEffect(() => {
     if (!isOpen) {
-      setSelectedUserId(null); // Reset selection when dialog closes
+      setSelectedUserId(null);
     }
-    // Reset form fields when user selection changes
     setAttendanceDate('');
     setAttendancePosition('');
     setFormError(null);
   }, [selectedUserId, isOpen]);
 
-  // --- Record Attendance Mutation ---
   const recordAttendanceMutation = useMutation({
     mutationFn: recordAttendance,
     onSuccess: (message, variables) => {
       toast.success(message || `Attendance recorded for user ${variables.id_user}`);
       queryClient.invalidateQueries({ queryKey: ['tournamentAttendances', tournamentId] });
-      setSelectedUserId(null); // Clear selection and hide form on success
+      setSelectedUserId(null);
     },
     onError: (error: Error) => {
       console.error("Error recording attendance:", error);
-      // Display specific backend error message in the form section
       setFormError(error.message || 'An unknown error occurred.');
       toast.error(`Failed to record attendance: ${error.message || 'Check form details.'}`);
     },
-    // onSettled: Not needed here as form hides on success/cancel
   });
 
 
-  // --- Validation and Submit Handler ---
   const handleSaveAttendance = useCallback(() => {
     setFormError(null); // Clear previous errors
     if (!selectedUserId || !tournamentId || !tournamentStartDate || !tournamentEndDate) {
@@ -128,30 +117,25 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
       return;
     }
 
-    // 1. Validate Position Input
     const pos = parseInt(attendancePosition, 10);
     if (isNaN(pos) || pos <= 0 || !Number.isInteger(pos)) {
       setFormError("Position must be a positive whole number.");
       return;
     }
 
-    // 2. Validate Position Uniqueness
     const isPositionTaken = attendances?.some(att => att.position === pos && att.position > 0); // Check only positive positions
     if (isPositionTaken) {
       setFormError(`Position ${pos} is already assigned.`);
       return;
     }
 
-    // 3. Validate Date Format
     if (!DATETIME_REGEX.test(attendanceDate)) {
       setFormError(`Date must be in YYYY-MM-DD HH:MM:SS format.`);
       return;
     }
 
-    // 4. Validate Date Parsability and Range
     let parsedAttendanceDate: Date;
     try {
-      // Parse using the specific format string
       parsedAttendanceDate = parse(attendanceDate, DATETIME_FORMAT, new Date());
       if (!isValid(parsedAttendanceDate)) {
         throw new Error("Invalid date value.");
@@ -175,7 +159,6 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
       return;
     }
 
-    // --- All Validations Passed ---
     const attendanceData: TournamentAttendance = {
       id_tournament: tournamentId,
       id_user: selectedUserId,
@@ -190,15 +173,14 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
   ]);
 
   const handleCancelEdit = () => {
-    setSelectedUserId(null); // Simply clear selection
+    setSelectedUserId(null);
   };
 
 
-  // --- Render Logic ---
   const renderUserList = () => {
-    if (isLoadingRegs || isLoadingAtt) { // Loading specific parts
+    if (isLoadingRegs || isLoadingAtt) {
       return (
-        <div className="space-y-3 py-4 min-h-[200px]"> {/* Ensure min height */}
+        <div className="space-y-3 py-4 min-h-[200px]">
           {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full" />)}
         </div>
       );
@@ -216,7 +198,7 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
       return <p className="text-center text-muted-foreground py-8">No users registered.</p>;
     }
     return (
-      <ScrollArea className="max-h-[45vh] border rounded-md"> {/* Adjust max height */}
+      <ScrollArea className="max-h-[45vh] border rounded-md">
         <div className="divide-y dark:divide-gray-700">
           {combinedUsers.map(({ registration, attendance }) => (
             <AttendanceUserRow
@@ -225,7 +207,7 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
               attendance={attendance}
               onSelectUser={setSelectedUserId}
               isSelected={selectedUserId === registration.id_user}
-              isAnyUserSelected={!!selectedUserId} // Pass if any user is selected
+              isAnyUserSelected={!!selectedUserId}
             />
           ))}
         </div>
@@ -234,9 +216,9 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
   };
 
   const renderAttendanceForm = () => {
-    if (!selectedUserId) return null; // Don't render form if no user is selected
+    if (!selectedUserId) return null;
 
-    const selectedUserName = selectedUserId; // Replace with actual name if fetched
+    const selectedUserName = selectedUserId;
 
     return (
       <div className="mt-4 p-4 border rounded-lg bg-muted/40">
@@ -250,14 +232,14 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
-          {/* Date Input */}
+
           <div className="space-y-1.5">
             <Label htmlFor="attendance-date">Attendance Date & Time</Label>
             <div className="flex items-center">
               <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
               <Input
                 id="attendance-date"
-                type="text" // Keep as text for specific format
+                type="text"
                 placeholder="YYYY-MM-DD HH:MM:SS"
                 value={attendanceDate}
                 onChange={(e) => setAttendanceDate(e.target.value)}
@@ -270,7 +252,6 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
             </p>
           </div>
 
-          {/* Position Input */}
           <div className="space-y-1.5">
             <Label htmlFor="attendance-position">Position</Label>
             <div className="flex items-center">

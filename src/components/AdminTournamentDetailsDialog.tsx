@@ -1,4 +1,3 @@
-// src/components/tournaments/admin/AdminTournamentDetailsDialog.tsx
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -11,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Use Tabs
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import {
   getTournament,
@@ -20,10 +19,10 @@ import {
   deleteTournamentRegistration,
   deleteTournamentAttendance,
   Tournament, TournamentRegistration, TournamentAttendance,
-} from '@/backend/tournament_backend'; // Adjust paths
+} from '@/backend/tournament_backend';
 import { Uuid } from '@/backend/common';
-import RegistrationRow from './RegistrationRow'; // Import admin version
-import AttendanceRow from './AttendanceRow'; // Import admin version
+import RegistrationRow from './RegistrationRow';
+import AttendanceRow from './AttendanceRow';
 import { AlertTriangle, Info } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
@@ -39,37 +38,32 @@ const AdminTournamentDetailsDialog: React.FC<AdminTournamentDetailsDialogProps> 
   onOpenChange,
 }) => {
   const queryClient = useQueryClient();
-  // State to track deletion progress per user ID (can be shared for reg/att)
   const [deletingUserId, setDeletingUserId] = useState<Uuid | null>(null);
-  // State to track specific errors per row (can be shared)
   const [rowError, setRowError] = useState<{ userId: Uuid, error: Error } | null>(null);
 
-  // --- Data Fetching ---
   const { data: tournament, isLoading: isLoadingDetails } = useQuery({
-    queryKey: ['adminTournamentDetails', tournamentId], // Use a distinct key
+    queryKey: ['adminTournamentDetails', tournamentId],
     queryFn: () => getTournament(tournamentId!),
     enabled: !!tournamentId && isOpen,
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: registrations, isLoading: isLoadingRegs } = useQuery({
-    queryKey: ['adminTournamentRegistrations', tournamentId], // Distinct key
+    queryKey: ['adminTournamentRegistrations', tournamentId],
     queryFn: () => getTournamentRegistrations(tournamentId!),
     enabled: !!tournamentId && isOpen,
-    staleTime: 30 * 1000, // Keep fresher for admin view
+    staleTime: 30 * 1000,
   });
 
   const { data: attendances, isLoading: isLoadingAtt } = useQuery({
-    queryKey: ['adminTournamentAttendances', tournamentId], // Distinct key
+    queryKey: ['adminTournamentAttendances', tournamentId],
     queryFn: () => getTournamentAttendance(tournamentId!),
     enabled: !!tournamentId && isOpen,
-    staleTime: 30 * 1000, // Keep fresher for admin view
+    staleTime: 30 * 1000,
   });
 
-  // --- Combined Loading ---
   const isLoading = isLoadingDetails || isLoadingRegs || isLoadingAtt;
 
-  // --- Delete Mutations ---
   const deleteRegMutation = useMutation({
     mutationFn: ({ tournamentId, userId }: { tournamentId: Uuid, userId: Uuid }) =>
       deleteTournamentRegistration(tournamentId, userId),
@@ -77,7 +71,7 @@ const AdminTournamentDetailsDialog: React.FC<AdminTournamentDetailsDialogProps> 
       toast.success(message || `Registration deleted for ${variables.userId}`);
       setRowError(null);
       queryClient.invalidateQueries({ queryKey: ['adminTournamentRegistrations', tournamentId] });
-      queryClient.invalidateQueries({ queryKey: ['adminTournamentAttendances', tournamentId] }); // Invalidate attendances too, as deleting reg might implicitly delete attendance via backend constraints
+      queryClient.invalidateQueries({ queryKey: ['adminTournamentAttendances', tournamentId] });
     },
     onError: (error: Error, variables) => {
       setRowError({ userId: variables.userId, error });
@@ -105,7 +99,6 @@ const AdminTournamentDetailsDialog: React.FC<AdminTournamentDetailsDialogProps> 
     }
   });
 
-  // --- Delete Handlers ---
   const handleDeleteRegistration = (userId: Uuid) => {
     if (!tournamentId) return;
     setRowError(null);
@@ -120,10 +113,9 @@ const AdminTournamentDetailsDialog: React.FC<AdminTournamentDetailsDialogProps> 
     deleteAttMutation.mutate({ tournamentId, userId });
   };
 
-  // --- Render Logic ---
   const renderTabContent = (
     data: TournamentRegistration[] | TournamentAttendance[] | undefined,
-    RowComponent: React.FC<any>, // Use 'any' for simplicity here, or create a common interface
+    RowComponent: React.FC<any>,
     type: 'registration' | 'attendance',
     isLoadingData: boolean
   ) => {
@@ -140,7 +132,7 @@ const AdminTournamentDetailsDialog: React.FC<AdminTournamentDetailsDialogProps> 
     return (
       <ScrollArea className="max-h-[50vh] border rounded-md mt-2">
         <div className="divide-y dark:divide-gray-700">
-          {data.map((item: any) => { // Use any here due to shared function
+          {data.map((item: any) => {
             const userId = item.id_user;
             const key = `${type}-${userId}`;
             const isDeleting = deletingUserId === userId;
@@ -163,13 +155,9 @@ const AdminTournamentDetailsDialog: React.FC<AdminTournamentDetailsDialogProps> 
     );
   };
 
-  // Helper (if not global)
-
-
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[750px]"> {/* Even Wider dialog */}
+      <DialogContent className="sm:max-w-[750px]">
         <DialogHeader>
           {isLoadingDetails || !tournament ? (
             <Skeleton className="h-6 w-3/4" />
@@ -186,7 +174,7 @@ const AdminTournamentDetailsDialog: React.FC<AdminTournamentDetailsDialogProps> 
           </DialogDescription>
         </DialogHeader>
 
-        {isLoading && !tournament ? ( // Show main skeleton only if core details are loading
+        {isLoading && !tournament ? (
           <div className="space-y-4 py-6"> <Skeleton className="h-10 w-full" /> <Skeleton className="h-10 w-full" /> <Skeleton className="h-10 w-full" /></div>
         ) : (
           <Tabs defaultValue="registrations" className="mt-4">

@@ -5,17 +5,32 @@ export interface Training {
   id_training: Uuid;
   name: string;
   id_category: Uuid;
+  trainer_id: Uuid; // Added
   start_datetime: string; // YYYY-MM-DD HH:MM:SS
   end_datetime: string;   // YYYY-MM-DD HH:MM:SS
-  minimum_payment: number;
+  minimum_payment: number | null; // Matches Option<f64>
 }
 
-export interface TrainingCreation {
+// This DTO is sent to the backend for creation
+export interface TrainingCreationPayload {
   name: string;
   id_category: Uuid;
-  start_datetime: string; // YYYY-MM-DD HH:MM:SS
-  end_datetime: string;   // YYYY-MM-DD HH:MM:SS
-  minimum_payment: number;
+  trainer_id: Uuid; // Added
+  start_datetime: string;
+  end_datetime: string;
+  minimum_payment?: number | null; // Optional, matches Option<f64>
+  id_court?: Uuid; // Optional court ID
+}
+
+// This DTO is sent to the backend for updates
+export interface TrainingUpdatePayload {
+  name: string;
+  id_category: Uuid;
+  trainer_id: Uuid; // Added
+  start_datetime: string;
+  end_datetime: string;
+  minimum_payment?: number | null;
+  id_court?: Uuid; // Optional court ID
 }
 
 export interface TrainingRegistration {
@@ -26,51 +41,64 @@ export interface TrainingRegistration {
   attendance_datetime: string | null;   // YYYY-MM-DD HH:MM:SS
 }
 
-export async function createTraining(training: TrainingCreation): Promise<void> {
-  await fetchJson(`${BASE_URL}/trainings`, {
+// For registering, only user_id might be needed if id_training is in path
+export interface TrainingRegistrationPayload {
+  id_user: Uuid;
+  // id_training will be part of the path
+  // registration_datetime, attended, attendance_datetime are set by backend on creation/update
+}
+
+export interface MarkAttendancePayload {
+  attended: boolean;
+}
+
+const trainingsBaseUrl = `${BASE_URL}/trainings`;
+
+// createTraining now expects TrainingCreationPayload and returns the created Training
+export async function createTraining(payload: TrainingCreationPayload): Promise<Training> {
+  return fetchJson<Training>(`${trainingsBaseUrl}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(training),
+    body: JSON.stringify(payload),
   });
 }
 
 export async function listTrainings(): Promise<Training[]> {
-  return fetchJson<Training[]>(`${BASE_URL}/trainings`);
+  return fetchJson<Training[]>(`${trainingsBaseUrl}`);
 }
 
-export async function getTraining(id: Uuid): Promise<Training> {
-  return fetchJson<Training>(`${BASE_URL}/trainings/${id}`);
+export async function getTraining(idTraining: Uuid): Promise<Training> { // Renamed id to idTraining
+  return fetchJson<Training>(`${trainingsBaseUrl}/${idTraining}`);
 }
 
-export async function updateTraining(training: Training): Promise<void> {
-  await fetchJson(`${BASE_URL}/trainings/${training.id_training}`, {
+// updateTraining now expects TrainingUpdatePayload and returns the updated Training
+export async function updateTraining(idTraining: Uuid, payload: TrainingUpdatePayload): Promise<Training> {
+  return fetchJson<Training>(`${trainingsBaseUrl}/${idTraining}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(training),
+    body: JSON.stringify(payload),
   });
 }
 
-export async function deleteTraining(id: Uuid): Promise<string> {
-  return fetchJson<string>(`${BASE_URL}/trainings/${id}`, { method: 'DELETE' });
+export async function deleteTraining(idTraining: Uuid): Promise<void> { // Backend returns string message
+  await fetchJson<string>(`${trainingsBaseUrl}/${idTraining}`, { method: 'DELETE' });
 }
 
-export async function registerUser(registration: TrainingRegistration): Promise<string> {
-  return fetchJson<string>(`${BASE_URL}/trainings/${registration.id_training}/register`, {
+// registerUserForTraining now returns the created TrainingRegistration
+export async function registerUserForTraining(idTraining: Uuid, payload: TrainingRegistrationPayload): Promise<TrainingRegistration> {
+  return fetchJson<TrainingRegistration>(`${trainingsBaseUrl}/${idTraining}/register`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(registration),
+    body: JSON.stringify(payload),
   });
 }
 
-export async function markAttendance(trainingId: Uuid, userId: Uuid, attended: boolean): Promise<string> {
-  return fetchJson<string>(`${BASE_URL}/trainings/${trainingId}/attendance/${userId}`, {
+// markAttendance now expects a payload for 'attended'
+export async function markTrainingAttendance(trainingId: Uuid, userId: Uuid, payload: MarkAttendancePayload): Promise<void> {
+  await fetchJson<string>(`${trainingsBaseUrl}/${trainingId}/attendance/${userId}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(attended),
+    body: JSON.stringify(payload), // Send payload with attended status
   });
 }
 
-export async function getEligibleTrainings(userId: Uuid): Promise<Training[]> {
+export async function getEligibleTrainingsForUser(userId: Uuid): Promise<Training[]> { // Renamed
   return fetchJson<Training[]>(`${BASE_URL}/users/${userId}/eligible-trainings`);
 }
 
@@ -79,11 +107,15 @@ export async function getUserTrainingRegistrations(userId: Uuid): Promise<Traini
 }
 
 export async function getTrainingRegistrations(trainingId: Uuid): Promise<TrainingRegistration[]> {
-  return fetchJson<TrainingRegistration[]>(`${BASE_URL}/trainings/${trainingId}/registrations`);
+  return fetchJson<TrainingRegistration[]>(`${trainingsBaseUrl}/${trainingId}/registrations`);
 }
 
-export async function deleteTrainingRegistration(trainingId: Uuid, userId: Uuid): Promise<string> {
-  return fetchJson<string>(`${BASE_URL}/trainings/${trainingId}/registrations/${userId}`, {
+export async function deleteTrainingRegistration(trainingId: Uuid, userId: Uuid): Promise<void> { // Backend returns string message
+  await fetchJson<string>(`${trainingsBaseUrl}/${trainingId}/registrations/${userId}`, {
     method: 'DELETE',
   });
+}
+
+export async function getTrainingsByTrainer(trainerId: Uuid): Promise<Training[]> {
+  return fetchJson<Training[]>(`${BASE_URL}/trainers/${trainerId}/trainings`);
 }

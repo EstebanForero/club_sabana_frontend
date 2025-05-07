@@ -1,3 +1,4 @@
+// src/components/trainings/TrainingManagementDialog.tsx
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -22,7 +23,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getTrainingRegistrations, markAttendance, TrainingRegistration } from '@/backend/training_backend';
+import {
+  getTrainingRegistrations,
+  markTrainingAttendance,
+  TrainingRegistration,
+  MarkAttendancePayload,
+} from '@/backend/training_backend';
 import { Uuid } from '@/backend/common';
 import { formatDate } from '@/lib/utils';
 import { AlertTriangle, UserCheck, UserX } from 'lucide-react';
@@ -44,7 +50,7 @@ const TrainingManagementDialog: React.FC<TrainingManagementDialogProps> = ({
   const [updatingAttendanceUserId, setUpdatingAttendanceUserId] = useState<Uuid | null>(null);
 
   const {
-    data: registrations,
+    data: registrationsData,
     isLoading: isLoadingRegistrations,
     isError: isErrorRegistrations,
     error: errorRegistrations,
@@ -55,19 +61,25 @@ const TrainingManagementDialog: React.FC<TrainingManagementDialogProps> = ({
     staleTime: 1 * 60 * 1000,
   });
 
+  const registrations = Array.isArray(registrationsData) ? registrationsData : [];
+
+
   const markAttendanceMutation = useMutation({
-    mutationFn: (variables: { trainingId: Uuid; userId: Uuid; attended: boolean }) =>
-      markAttendance(variables.trainingId, variables.userId, variables.attended),
+    mutationFn: (variables: {
+      trainingId: Uuid;
+      userId: Uuid;
+      payload: MarkAttendancePayload;
+    }) => markTrainingAttendance(variables.trainingId, variables.userId, variables.payload),
     onMutate: (variables) => {
       setUpdatingAttendanceUserId(variables.userId);
     },
-    onSuccess: (message, variables) => {
-      toast.success(message || `Attendance updated for user ${variables.userId}.`);
+    onSuccess: (response, variables) => {
+      toast.success(typeof response === 'string' && response ? response : `Attendance updated for user ${variables.userId}.`);
       queryClient.invalidateQueries({ queryKey: ['trainingRegistrations', variables.trainingId] });
     },
     onError: (error: Error, variables) => {
       console.error("Error marking attendance:", error);
-      toast.error(`Failed to update attendance for user ${variables.userId}: ${error.message || 'Unknown error'}`);
+      toast.error(`Failed to update for ${variables.userId}: ${error.message || 'Unknown error'}`);
     },
     onSettled: () => {
       setUpdatingAttendanceUserId(null);
@@ -77,10 +89,14 @@ const TrainingManagementDialog: React.FC<TrainingManagementDialogProps> = ({
   const handleAttendanceChange = (userId: Uuid, currentAttendedStatus: boolean) => {
     if (!trainingId || markAttendanceMutation.isLoading) return;
 
+    const payload: MarkAttendancePayload = {
+      attended: !currentAttendedStatus,
+    };
+
     markAttendanceMutation.mutate({
       trainingId,
       userId,
-      attended: !currentAttendedStatus,
+      payload,
     });
   };
 
@@ -111,7 +127,7 @@ const TrainingManagementDialog: React.FC<TrainingManagementDialogProps> = ({
       );
     }
 
-    if (!registrations || registrations.length === 0) {
+    if (registrations.length === 0) {
       return <p className="text-muted-foreground text-center py-6">No users registered for this training yet.</p>;
     }
 
@@ -130,7 +146,14 @@ const TrainingManagementDialog: React.FC<TrainingManagementDialogProps> = ({
             return (
               <TableRow key={reg.id_user}>
                 <TableCell className="font-medium">{reg.id_user}</TableCell>
-                <TableCell>{formatDate(reg.registration_datetime, 'PPp')}</TableCell>
+                <TableCell>
+                  {formatDate(reg.registration_datetime, 'PPp')}
+                  {reg.attended && reg.attendance_datetime && (
+                    <span className="block text-xs text-muted-foreground">
+                      Attended: {formatDate(reg.attendance_datetime, 'Pp')}
+                    </span>
+                  )}
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end space-x-2">
                     <Label htmlFor={`attendance-${reg.id_user}`} className="sr-only">
@@ -140,7 +163,7 @@ const TrainingManagementDialog: React.FC<TrainingManagementDialogProps> = ({
                       id={`attendance-${reg.id_user}`}
                       checked={reg.attended}
                       onCheckedChange={() => handleAttendanceChange(reg.id_user, reg.attended)}
-                      disabled={isUpdatingThisUser}
+                      disabled={isUpdatingThisUser || markAttendanceMutation.isLoading}
                       aria-label={`Mark attendance for user ${reg.id_user}`}
                     />
                     {reg.attended

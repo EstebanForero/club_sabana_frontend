@@ -8,18 +8,17 @@ import { AlertTriangle, Terminal } from "lucide-react";
 
 const TournamentManagement = () => {
   const { data: tournaments, isLoading, isError, error } = useQuery({
-    queryKey: ['tournaments'], // Use the shared key if admin sees all
+    queryKey: ['tournaments'],
     queryFn: listTournaments,
-    staleTime: 2 * 60 * 1000, // Keep somewhat fresh
+    staleTime: 2 * 60 * 1000,
   });
 
-  // Render Loading
   if (isLoading) {
     return (
       <div className="container mx-auto p-4">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Manage Tournaments</h1>
-          <Skeleton className="h-10 w-36" /> {/* Skeleton for create button */}
+          <Skeleton className="h-10 w-36" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 w-full" />)}
@@ -28,7 +27,6 @@ const TournamentManagement = () => {
     );
   }
 
-  // Render Error
   if (isError) {
     return (
       <div className="container mx-auto p-4">
@@ -45,8 +43,8 @@ const TournamentManagement = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Manage Tournaments</h1>
-        <TournamentCreation /> {/* Add the creation button/dialog */}
+        <h1 className="text-2xl font-bold mr-8">Manage Tournaments</h1>
+        <TournamentCreation />
       </div>
 
       {tournaments && tournaments.length > 0 ? (
@@ -55,7 +53,7 @@ const TournamentManagement = () => {
             <TournamentComponent
               key={tournament.id_tournament}
               tournament={tournament}
-              enableAdminControls={true} // <-- Ensure controls are enabled
+              enableAdminControls={true}
             />
           ))}
         </div>

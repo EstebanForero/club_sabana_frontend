@@ -8,15 +8,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Training, TrainingRegistration } from '@/backend/training_backend';
+import { Training } from '@/backend/training_backend';
 import { Uuid } from '@/backend/common';
-import { formatDate, getCurrentDateTimeString } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
 import { CalendarDays, DollarSign, CheckSquare } from 'lucide-react';
 
 interface AvailableTrainingCardProps {
   training: Training;
   userId: Uuid;
-  onRegister: (registrationData: TrainingRegistration) => void;
+  onRegister: (trainingId: Uuid) => void;
   isRegistering: boolean;
 }
 
@@ -28,14 +28,7 @@ const AvailableTrainingCard: React.FC<AvailableTrainingCardProps> = ({
 }) => {
 
   const handleRegisterClick = () => {
-    const registrationData: TrainingRegistration = {
-      id_training: training.id_training,
-      id_user: userId,
-      registration_datetime: getCurrentDateTimeString(),
-      attended: false,
-      attendance_datetime: null,
-    };
-    onRegister(registrationData);
+    onRegister(training.id_training);
   };
 
   return (

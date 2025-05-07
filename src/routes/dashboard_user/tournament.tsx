@@ -1,31 +1,43 @@
 import React, { useMemo, useState } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router'; // Added redirect
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import {
-  getEligibleTournaments,
-  getUserRegistrations,
   listTournaments,
-  registerUser,
-  getUserAttendance,
   Tournament,
-  TournamentRegistration,
-  TournamentAttendance
-} from '@/backend/tournament_backend';
+  TournamentRegistration, // This is the returned type from registration
+  TournamentAttendance,
+  getEligibleTournamentsForUser,      // UPDATED function name
+  getUserTournamentRegistrations,
+  getUserTournamentAttendanceList,     // CORRECTED function name for user's attendance
+  registerUserForTournament,          // UPDATED function name
+  TournamentRegistrationPayload,      // UPDATED type for payload
+} from '@/backend/tournament_backend'; // Ensure path is correct
 import { Uuid } from '@/backend/common';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from 'lucide-react';
 
-import UserTournamentCard from '@/components/UserTournamentCard';
-import { AuthManager } from '@/backend/auth';
 import { Separator } from '@/components/ui/separator';
+import UserTournamentCard from '@/components/UserTournamentCard';
 import RegisteredTournamentCard from '@/components/RegisteredTournamentCard';
 import AttendedTournamentCard from '@/components/AttendedTournamentCard';
+import { AuthManager } from '@/backend/auth';
 
 export const Route = createFileRoute('/dashboard_user/tournament')({
   component: TournamentPageComponent,
+  loader: async () => {
+    const userId = AuthManager.getUserId();
+    if (!userId) {
+      console.warn("User not authenticated, redirecting to login from tournament loader.");
+      throw redirect({
+        to: '/auth/login',
+        search: { redirect: Route.fullPath },
+      });
+    }
+    return { userId };
+  }
 });
 
 interface CombinedRegistration {
@@ -39,12 +51,7 @@ interface CombinedAttendance {
 }
 
 function TournamentPageComponent() {
-  const userId = AuthManager.getUserId() ?? '';
-
-  if (!userId) {
-    console.error("User not authenticated. Needs redirect.");
-    return <div className="container mx-auto p-4">User not authenticated. Please log in.</div>;
-  }
+  const { userId } = Route.useLoaderData();
 
   const queryClient = useQueryClient();
   const [registeringTournamentId, setRegisteringTournamentId] = useState<Uuid | null>(null);
@@ -56,7 +63,7 @@ function TournamentPageComponent() {
     error: errorEligible
   } = useQuery({
     queryKey: ['eligibleTournaments', userId],
-    queryFn: () => getEligibleTournaments(userId),
+    queryFn: () => getEligibleTournamentsForUser(userId),
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,
   });
@@ -67,8 +74,8 @@ function TournamentPageComponent() {
     isError: isErrorRegistrations,
     error: errorRegistrations
   } = useQuery({
-    queryKey: ['userRegistrations', userId],
-    queryFn: () => getUserRegistrations(userId),
+    queryKey: ['userTournamentRegistrations', userId],
+    queryFn: () => getUserTournamentRegistrations(userId),
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,
   });
@@ -90,8 +97,8 @@ function TournamentPageComponent() {
     isError: isErrorAttendance,
     error: errorAttendance,
   } = useQuery({
-    queryKey: ['userAttendance', userId],
-    queryFn: () => getUserAttendance(userId),
+    queryKey: ['userTournamentAttendance', userId],
+    queryFn: () => getUserTournamentAttendanceList(userId),
     enabled: !!userId,
     staleTime: 15 * 60 * 1000,
   });
@@ -103,11 +110,14 @@ function TournamentPageComponent() {
 
 
   const registeredTournamentsList = useMemo<CombinedRegistration[]>(() => {
-    if (!registrationsData || !allTournamentsData) return [];
+    const validRegistrations = Array.isArray(registrationsData) ? registrationsData : [];
+    if (validRegistrations.length === 0 || !allTournamentsData) return [];
+
     const tournamentsMap = new Map<Uuid, Tournament>();
     allTournamentsData.forEach(t => tournamentsMap.set(t.id_tournament, t));
     const combined: CombinedRegistration[] = [];
-    registrationsData.forEach(reg => {
+
+    validRegistrations.forEach(reg => {
       const tournamentDetails = tournamentsMap.get(reg.id_tournament);
       if (tournamentDetails) {
         combined.push({ tournament: tournamentDetails, registration_datetime: reg.registration_datetime });
@@ -119,7 +129,8 @@ function TournamentPageComponent() {
   }, [registrationsData, allTournamentsData]);
 
   const attendedTournamentsList = useMemo<CombinedAttendance[]>(() => {
-    if (!attendanceData || !allTournamentsData) {
+    const validAttendance = Array.isArray(attendanceData) ? attendanceData : [];
+    if (validAttendance.length === 0 || !allTournamentsData) {
       return [];
     }
 
@@ -127,7 +138,7 @@ function TournamentPageComponent() {
     allTournamentsData.forEach(t => tournamentsMap.set(t.id_tournament, t));
 
     const combined: CombinedAttendance[] = [];
-    attendanceData.forEach(att => {
+    validAttendance.forEach(att => {
       const tournamentDetails = tournamentsMap.get(att.id_tournament);
       if (tournamentDetails) {
         combined.push({
@@ -147,11 +158,12 @@ function TournamentPageComponent() {
 
 
   const registerMutation = useMutation({
-    mutationFn: registerUser,
-    onSuccess: (message) => {
-      toast.success(message || 'Successfully registered!');
+    mutationFn: (variables: { tournamentId: Uuid; payload: TournamentRegistrationPayload }) =>
+      registerUserForTournament(variables.tournamentId, variables.payload),
+    onSuccess: (createdRegistration) => {
+      toast.success(`Successfully registered for tournament! Registered on: ${createdRegistration.registration_datetime}`);
       queryClient.invalidateQueries({ queryKey: ['eligibleTournaments', userId] });
-      queryClient.invalidateQueries({ queryKey: ['userRegistrations', userId] });
+      queryClient.invalidateQueries({ queryKey: ['userTournamentRegistrations', userId] });
     },
     onError: (error: Error) => {
       console.error("Registration Error:", error);
@@ -162,9 +174,14 @@ function TournamentPageComponent() {
     }
   });
 
-  const handleRegister = (registrationData: TournamentRegistration) => {
-    setRegisteringTournamentId(registrationData.id_tournament);
-    registerMutation.mutate(registrationData);
+  const handleRegister = (tournamentId: Uuid) => {
+    if (!userId) {
+      toast.error("User not identified. Cannot register.");
+      return;
+    }
+    setRegisteringTournamentId(tournamentId);
+    const payload: TournamentRegistrationPayload = { id_user: userId };
+    registerMutation.mutate({ tournamentId, payload });
   };
 
 
@@ -173,7 +190,7 @@ function TournamentPageComponent() {
   }
 
   if (isError) {
-    return <ErrorDisplay error={error instanceof Error ? error : new Error("An unknown error occurred")} />;
+    return <ErrorDisplay error={error instanceof Error ? error : new Error(String(error) || "An unknown error occurred")} />;
   }
 
   const registeredIds = new Set(registeredTournamentsList.map(r => r.tournament.id_tournament));
@@ -190,7 +207,7 @@ function TournamentPageComponent() {
                 key={tournament.id_tournament}
                 tournament={tournament}
                 userId={userId}
-                onRegister={handleRegister}
+                onRegister={() => handleRegister(tournament.id_tournament)}
                 isRegistering={registeringTournamentId === tournament.id_tournament}
               />
             ))}
@@ -210,7 +227,7 @@ function TournamentPageComponent() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {registeredTournamentsList.map(({ tournament, registration_datetime }) => (
               <RegisteredTournamentCard
-                key={tournament.id_tournament}
+                key={tournament.id_tournament + '-reg'}
                 tournament={tournament}
                 registrationDate={registration_datetime}
               />
@@ -231,7 +248,7 @@ function TournamentPageComponent() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {attendedTournamentsList.map(({ tournament, attendance }) => (
               <AttendedTournamentCard
-                key={attendance.id_tournament} // Use a unique key
+                key={tournament.id_tournament + '-att'}
                 tournament={tournament}
                 attendance={attendance}
               />
@@ -246,7 +263,6 @@ function TournamentPageComponent() {
     </div>
   );
 }
-
 
 const LoadingSkeletons: React.FC = () => (
   <div className="container mx-auto p-4 space-y-8">

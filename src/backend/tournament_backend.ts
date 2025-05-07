@@ -9,12 +9,24 @@ export interface Tournament {
   end_datetime: string;   // YYYY-MM-DD HH:MM:SS
 }
 
-export interface TournamentCreation {
+// This DTO is sent to the backend for creation
+export interface TournamentCreationPayload {
   name: string;
   id_category: Uuid;
   start_datetime: string;
   end_datetime: string;
+  id_court?: Uuid; // Optional court ID
 }
+
+// This DTO is sent to the backend for updates
+export interface TournamentUpdatePayload {
+  name: string;
+  id_category: Uuid;
+  start_datetime: string;
+  end_datetime: string;
+  id_court?: Uuid; // Optional court ID
+}
+
 
 export interface TournamentRegistration {
   id_tournament: Uuid;
@@ -22,112 +34,130 @@ export interface TournamentRegistration {
   registration_datetime: string; // YYYY-MM-DD HH:MM:SS
 }
 
+// For registering, only user_id might be needed in payload if id_tournament is in path
+export interface TournamentRegistrationPayload {
+  id_user: Uuid;
+  // registration_datetime is set by backend
+}
+
+
 export interface TournamentAttendance {
   id_tournament: Uuid;
   id_user: Uuid;
   attendance_datetime: string; // YYYY-MM-DD HH:MM:SS
+  position: number; // i32 in Rust
+}
+
+// For recording attendance, user_id and position are needed in payload if id_tournament is in path
+export interface TournamentAttendancePayload {
+  id_user: Uuid;
+  position: number;
+  // attendance_datetime is set by backend
+}
+
+export interface UpdatePositionPayload {
   position: number;
 }
 
-const base_url = `${BASE_URL}/tournaments`;
 
-export async function createTournament(tournament: TournamentCreation): Promise<void> {
-  await fetchJson(`${base_url}`, {
+const tournamentsBaseUrl = `${BASE_URL}/tournaments`;
+
+// createTournament now expects TournamentCreationPayload and returns the created Tournament
+export async function createTournament(payload: TournamentCreationPayload): Promise<Tournament> {
+  return fetchJson<Tournament>(`${tournamentsBaseUrl}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(tournament),
+    body: JSON.stringify(payload),
   });
 }
 
 export async function listTournaments(): Promise<Tournament[]> {
-  return fetchJson<Tournament[]>(`${base_url}`);
+  return fetchJson<Tournament[]>(`${tournamentsBaseUrl}`);
 }
 
-export async function getTournament(id: Uuid): Promise<Tournament> {
-  return fetchJson<Tournament>(`${base_url}/${id}`);
+export async function getTournament(idTournament: Uuid): Promise<Tournament> { // Renamed id to idTournament
+  return fetchJson<Tournament>(`${tournamentsBaseUrl}/${idTournament}`);
 }
 
-export async function updateTournament(tournament: Tournament): Promise<void> {
-  await fetchJson(`${base_url}/${tournament.id_tournament}`, {
+// updateTournament now expects TournamentUpdatePayload and returns the updated Tournament
+export async function updateTournament(idTournament: Uuid, payload: TournamentUpdatePayload): Promise<Tournament> {
+  return fetchJson<Tournament>(`${tournamentsBaseUrl}/${idTournament}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(tournament),
+    body: JSON.stringify(payload),
   });
 }
 
-export async function deleteTournament(id: Uuid): Promise<string> {
-  return fetchJson<string>(`${base_url}/${id}`, { method: 'DELETE' });
+export async function deleteTournament(idTournament: Uuid): Promise<void> { // Backend returns string message
+  await fetchJson<string>(`${tournamentsBaseUrl}/${idTournament}`, { method: 'DELETE' });
 }
 
-export async function registerUser(registration: TournamentRegistration): Promise<string> {
-  return fetchJson<string>(`${base_url}/${registration.id_tournament}/register`, {
+// registerUser (for tournament) now returns the created TournamentRegistration
+export async function registerUserForTournament(idTournament: Uuid, payload: TournamentRegistrationPayload): Promise<TournamentRegistration> {
+  return fetchJson<TournamentRegistration>(`${tournamentsBaseUrl}/${idTournament}/register`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(registration),
+    body: JSON.stringify(payload),
   });
 }
 
-export async function recordAttendance(attendance: TournamentAttendance): Promise<string> {
-  return fetchJson<string>(`${base_url}/${attendance.id_tournament}/attendance`, {
+// recordAttendance now returns the created TournamentAttendance
+export async function recordTournamentAttendance(idTournament: Uuid, payload: TournamentAttendancePayload): Promise<TournamentAttendance> {
+  return fetchJson<TournamentAttendance>(`${tournamentsBaseUrl}/${idTournament}/attendance`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(attendance),
+    body: JSON.stringify(payload),
   });
 }
 
-// Updates the position of a given user in the tournament
-export async function updatePosition(tournamentId: Uuid, userId: Uuid, position: number): Promise<string> {
-  return fetchJson<string>(`${base_url}/tournaments/${tournamentId}/position/${userId}`, {
+// updatePosition now expects only position in the body
+export async function updateTournamentPosition(tournamentId: Uuid, userId: Uuid, payload: UpdatePositionPayload): Promise<void> {
+  await fetchJson<string>(`${tournamentsBaseUrl}/${tournamentId}/users/${userId}/position`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(position),
+    body: JSON.stringify(payload), // Send only the position as per backend
   });
 }
 
-export async function getEligibleTournaments(userId: Uuid): Promise<Tournament[]> {
-  return fetchJson<Tournament[]>(`${base_url}/users/${userId}/eligible-tournaments`);
+export async function getEligibleTournamentsForUser(userId: Uuid): Promise<Tournament[]> { // Renamed
+  return fetchJson<Tournament[]>(`${BASE_URL}/users/${userId}/eligible-tournaments`); // Path updated
 }
 
-export async function getUserRegistrations(userId: Uuid): Promise<TournamentRegistration[]> {
-  return fetchJson<TournamentRegistration[]>(`${base_url}/registrations/user/${userId}`);
+export async function getUserTournamentRegistrations(userId: Uuid): Promise<TournamentRegistration[]> { // Renamed and path updated
+  return fetchJson<TournamentRegistration[]>(`${tournamentsBaseUrl}/registrations/user/${userId}`);
 }
 
 export async function getTournamentRegistrations(tournamentId: Uuid): Promise<TournamentRegistration[]> {
-  return fetchJson<TournamentRegistration[]>(`${base_url}/registrations/tournament/${tournamentId}`);
+  return fetchJson<TournamentRegistration[]>(`${tournamentsBaseUrl}/registrations/tournament/${tournamentId}`);
 }
 
-export async function getTournamentAttendance(
+export async function getTournamentAttendanceList( // Renamed
   tournamentId: Uuid
 ): Promise<TournamentAttendance[]> {
   return fetchJson<TournamentAttendance[]>(
-    `${base_url}/${tournamentId}/attendance`
+    `${tournamentsBaseUrl}/${tournamentId}/attendance`
   );
 }
 
-export async function getUserAttendance(
+export async function getUserTournamentAttendanceList( // Renamed
   userId: Uuid
 ): Promise<TournamentAttendance[]> {
   return fetchJson<TournamentAttendance[]>(
-    `${base_url}/users/${userId}/attendance`
+    `${BASE_URL}/users/${userId}/tournament-attendance` // Path updated
   );
 }
 
-export async function deleteTournamentAttendance(
+export async function deleteUserAttendanceFromTournament( // Renamed
   tournamentId: Uuid,
   userId: Uuid
-): Promise<string> {
-  return fetchJson<string>(
-    `${base_url}/${tournamentId}/attendance/${userId}`,
+): Promise<void> { // Backend returns string message
+  await fetchJson<string>(
+    `${tournamentsBaseUrl}/${tournamentId}/attendance/${userId}`,
     { method: "DELETE" }
   );
 }
 
-export async function deleteTournamentRegistration(
+export async function deleteUserRegistrationFromTournament( // Renamed
   tournamentId: Uuid,
   userId: Uuid
-): Promise<string> {
-  return fetchJson<string>(
-    `${base_url}/${tournamentId}/registrations/${userId}`,
+): Promise<void> { // Backend returns string message
+  await fetchJson<string>(
+    `${tournamentsBaseUrl}/${tournamentId}/registrations/${userId}`,
     { method: "DELETE" }
   );
 }

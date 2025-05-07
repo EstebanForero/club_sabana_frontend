@@ -1,7 +1,8 @@
+// src/components/tournaments/TournamentAttendanceDialog.tsx (or your path to it)
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { parse, isWithinInterval, isValid, format as formatDateFn, formatDate } from 'date-fns';
+import { parse, isWithinInterval, isValid, format as formatDateFn } from 'date-fns'; // Removed formatDate as it's a local var
 
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter
@@ -14,20 +15,26 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import {
-  getTournamentRegistrations, recordAttendance,
-  TournamentRegistration, TournamentAttendance,
-  Tournament, getTournament,
-  getTournamentAttendance
+  getTournamentRegistrations,
+  recordTournamentAttendance,
+  TournamentRegistration,
+  TournamentAttendance,
+  TournamentAttendancePayload,
+  Tournament,
+  getTournament,
+  getTournamentAttendanceList,
 } from '@/backend/tournament_backend';
 import { Uuid } from '@/backend/common';
 import AttendanceUserRow from './AttendanceUserRow';
-import { AlertTriangle, Info, CalendarIcon, ListOrdered, X } from 'lucide-react';
+import { AlertTriangle, ListOrdered, X } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { formatDate as formatDateUtil, getCurrentDateTimeString } from '@/lib/utils';
 
 interface TournamentAttendanceDialogProps {
   tournamentId: Uuid | null;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  tournamentName?: string;
 }
 
 interface CombinedUserData {
@@ -35,53 +42,55 @@ interface CombinedUserData {
   attendance?: TournamentAttendance;
 }
 
-const DATETIME_FORMAT = 'yyyy-MM-dd HH:mm:ss';
-const DATETIME_REGEX = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
-
 const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
   tournamentId,
   isOpen,
   onOpenChange,
+  tournamentName,
 }) => {
   const queryClient = useQueryClient();
   const [selectedUserId, setSelectedUserId] = useState<Uuid | null>(null);
-  const [attendanceDate, setAttendanceDate] = useState('');
   const [attendancePosition, setAttendancePosition] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
   const { data: tournamentDetails, isLoading: isLoadingDetails } = useQuery({
-    queryKey: ['tournamentDetails', tournamentId],
+    queryKey: ['tournamentDetailsDialog', tournamentId],
     queryFn: () => getTournament(tournamentId!),
     enabled: !!tournamentId && isOpen,
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: registrations, isLoading: isLoadingRegs } = useQuery({
-    queryKey: ['tournamentRegistrations', tournamentId],
+    queryKey: ['tournamentRegistrationsDialog', tournamentId],
     queryFn: () => getTournamentRegistrations(tournamentId!),
     enabled: !!tournamentId && isOpen, staleTime: 1 * 60 * 1000,
   });
 
   const { data: attendances, isLoading: isLoadingAtt } = useQuery({
-    queryKey: ['tournamentAttendances', tournamentId],
-    queryFn: () => getTournamentAttendance(tournamentId!),
+    queryKey: ['tournamentAttendanceListDialog', tournamentId],
+    queryFn: () => getTournamentAttendanceList(tournamentId!),
     enabled: !!tournamentId && isOpen, staleTime: 1 * 60 * 1000,
   });
 
   const isLoading = isLoadingDetails || isLoadingRegs || isLoadingAtt;
-  const tournamentStartDate = tournamentDetails?.start_datetime;
-  const tournamentEndDate = tournamentDetails?.end_datetime;
-  const effectiveTournamentName = tournamentDetails?.name || 'Tournament';
+  const effectiveTournamentName = tournamentName || tournamentDetails?.name || 'Tournament';
 
   const combinedUsers = useMemo<CombinedUserData[]>(() => {
-    if (!registrations) return [];
+    const validRegistrations = Array.isArray(registrations) ? registrations : [];
+    const validAttendances = Array.isArray(attendances) ? attendances : [];
+    if (validRegistrations.length === 0) return [];
+
     const attendanceMap = new Map<Uuid, TournamentAttendance>();
-    attendances?.forEach(att => attendanceMap.set(att.id_user, att));
-    return registrations.map(reg => ({
+    validAttendances.forEach(att => attendanceMap.set(att.id_user, att));
+
+    return validRegistrations.map(reg => ({
       registration: reg, attendance: attendanceMap.get(reg.id_user),
     })).sort((a, b) => {
       const attendedA = !!a.attendance; const attendedB = !!b.attendance;
       if (attendedA !== attendedB) return attendedA ? 1 : -1;
+      if (a.attendance && b.attendance) {
+        return a.attendance.position - b.attendance.position;
+      }
       return new Date(a.registration.registration_datetime).getTime() - new Date(b.registration.registration_datetime).getTime();
     });
   }, [registrations, attendances]);
@@ -89,31 +98,37 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
   useEffect(() => {
     if (!isOpen) {
       setSelectedUserId(null);
+      setAttendancePosition('');
+      setFormError(null);
     }
-    setAttendanceDate('');
-    setAttendancePosition('');
-    setFormError(null);
+
+    if (isOpen) {
+      setAttendancePosition('');
+      setFormError(null);
+    }
   }, [selectedUserId, isOpen]);
 
   const recordAttendanceMutation = useMutation({
-    mutationFn: recordAttendance,
-    onSuccess: (message, variables) => {
-      toast.success(message || `Attendance recorded for user ${variables.id_user}`);
-      queryClient.invalidateQueries({ queryKey: ['tournamentAttendances', tournamentId] });
+    mutationFn: (variables: { idTournament: Uuid; payload: TournamentAttendancePayload }) =>
+      recordTournamentAttendance(variables.idTournament, variables.payload),
+    onSuccess: (createdAttendance, variables) => {
+      toast.success(`Attendance recorded for user ${variables.payload.id_user}. Position: ${createdAttendance.position}`);
+      queryClient.invalidateQueries({ queryKey: ['tournamentAttendanceListDialog', tournamentId] });
+      queryClient.invalidateQueries({ queryKey: ['tournamentAttendances', tournamentId] }); // If used elsewhere
       setSelectedUserId(null);
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables) => {
       console.error("Error recording attendance:", error);
       setFormError(error.message || 'An unknown error occurred.');
-      toast.error(`Failed to record attendance: ${error.message || 'Check form details.'}`);
+      toast.error(`Failed to record for ${variables.payload.id_user}: ${error.message || 'Check form details.'}`);
     },
   });
 
 
   const handleSaveAttendance = useCallback(() => {
-    setFormError(null); // Clear previous errors
-    if (!selectedUserId || !tournamentId || !tournamentStartDate || !tournamentEndDate) {
-      setFormError("Cannot save: Missing user selection or tournament details.");
+    setFormError(null);
+    if (!selectedUserId || !tournamentId) {
+      setFormError("Cannot save: Missing user selection or tournament ID.");
       return;
     }
 
@@ -123,57 +138,27 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
       return;
     }
 
-    const isPositionTaken = attendances?.some(att => att.position === pos && att.position > 0); // Check only positive positions
+    const isPositionTaken = attendances?.some(att => att.id_user !== selectedUserId && att.position === pos && att.position > 0);
     if (isPositionTaken) {
-      setFormError(`Position ${pos} is already assigned.`);
+      setFormError(`Position ${pos} is already assigned to another user.`);
       return;
     }
 
-    if (!DATETIME_REGEX.test(attendanceDate)) {
-      setFormError(`Date must be in YYYY-MM-DD HH:MM:SS format.`);
-      return;
-    }
-
-    let parsedAttendanceDate: Date;
-    try {
-      parsedAttendanceDate = parse(attendanceDate, DATETIME_FORMAT, new Date());
-      if (!isValid(parsedAttendanceDate)) {
-        throw new Error("Invalid date value.");
-      }
-    } catch (e) {
-      setFormError("Invalid date value. Could not parse.");
-      return;
-    }
-
-
-    const parsedStartDate = new Date(tournamentStartDate.replace(' ', 'T'));
-    const parsedEndDate = new Date(tournamentEndDate.replace(' ', 'T'));
-
-    if (!isValid(parsedStartDate) || !isValid(parsedEndDate)) {
-      setFormError("Invalid tournament start/end dates.");
-      return;
-    }
-
-    if (!isWithinInterval(parsedAttendanceDate, { start: parsedStartDate, end: parsedEndDate })) {
-      setFormError(`Attendance date must be between ${formatDateFn(parsedStartDate, 'PPp')} and ${formatDateFn(parsedEndDate, 'PPp')}.`);
-      return;
-    }
-
-    const attendanceData: TournamentAttendance = {
-      id_tournament: tournamentId,
+    const payload: TournamentAttendancePayload = {
       id_user: selectedUserId,
-      attendance_datetime: attendanceDate, // Use the validated string
       position: pos,
     };
-    recordAttendanceMutation.mutate(attendanceData);
+
+    recordAttendanceMutation.mutate({ idTournament: tournamentId, payload });
 
   }, [
-    selectedUserId, tournamentId, tournamentStartDate, tournamentEndDate,
-    attendanceDate, attendancePosition, attendances, recordAttendanceMutation
+    selectedUserId, tournamentId, attendancePosition, attendances, recordAttendanceMutation
   ]);
 
   const handleCancelEdit = () => {
     setSelectedUserId(null);
+    setAttendancePosition('');
+    setFormError(null);
   };
 
 
@@ -183,9 +168,9 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
         <div className="space-y-3 py-4 min-h-[200px]">
           {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full" />)}
         </div>
-      );
+      )
     }
-    if (!registrations) {
+    if (!registrations || !attendances) {
       return (
         <Alert variant="destructive" className="my-4">
           <AlertTriangle className="h-4 w-4" />
@@ -197,6 +182,7 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
     if (combinedUsers.length === 0) {
       return <p className="text-center text-muted-foreground py-8">No users registered.</p>;
     }
+
     return (
       <ScrollArea className="max-h-[45vh] border rounded-md">
         <div className="divide-y dark:divide-gray-700">
@@ -205,7 +191,7 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
               key={registration.id_user}
               registration={registration}
               attendance={attendance}
-              onSelectUser={setSelectedUserId}
+              onSelectUser={() => setSelectedUserId(registration.id_user)}
               isSelected={selectedUserId === registration.id_user}
               isAnyUserSelected={!!selectedUserId}
             />
@@ -218,72 +204,46 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
   const renderAttendanceForm = () => {
     if (!selectedUserId) return null;
 
-    const selectedUserName = selectedUserId;
+    const selectedUserRegistration = registrations?.find(reg => reg.id_user === selectedUserId);
+    const selectedUserName = selectedUserRegistration ? `User ID: ${selectedUserRegistration.id_user}` : `User ID: ${selectedUserId}`; // Fallback
 
     return (
       <div className="mt-4 p-4 border rounded-lg bg-muted/40">
         <div className="flex justify-between items-center mb-3">
           <h4 className="font-semibold text-md">
-            Record Attendance for User: {selectedUserName}
+            Record Attendance for: {selectedUserName}
           </h4>
           <Button variant="ghost" size="icon" onClick={handleCancelEdit} aria-label="Cancel attendance entry">
             <X className="h-4 w-4" />
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
-
-          <div className="space-y-1.5">
-            <Label htmlFor="attendance-date">Attendance Date & Time</Label>
-            <div className="flex items-center">
-              <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
-              <Input
-                id="attendance-date"
-                type="text"
-                placeholder="YYYY-MM-DD HH:MM:SS"
-                value={attendanceDate}
-                onChange={(e) => setAttendanceDate(e.target.value)}
-                disabled={recordAttendanceMutation.isLoading}
-                className={formError && (!DATETIME_REGEX.test(attendanceDate) || formError.includes("date")) ? "border-destructive" : ""}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Must be between tournament start and end times.
-            </p>
+        <div className="space-y-1.5 mb-3">
+          <Label htmlFor="attendance-position">Position</Label>
+          <div className="flex items-center">
+            <ListOrdered className="h-4 w-4 mr-2 text-muted-foreground" />
+            <Input
+              id="attendance-position"
+              type="number"
+              placeholder="e.g., 1"
+              min="1"
+              step="1"
+              value={attendancePosition}
+              onChange={(e) => setAttendancePosition(e.target.value)}
+              disabled={recordAttendanceMutation.isLoading}
+              className={formError && (formError.includes("Position") || formError.includes("positive")) ? "border-destructive" : ""}
+            />
           </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="attendance-position">Position</Label>
-            <div className="flex items-center">
-              <ListOrdered className="h-4 w-4 mr-2 text-muted-foreground" />
-              <Input
-                id="attendance-position"
-                type="number"
-                placeholder="e.g., 1"
-                min="1"
-                step="1"
-                value={attendancePosition}
-                onChange={(e) => setAttendancePosition(e.target.value)}
-                disabled={recordAttendanceMutation.isLoading}
-                className={formError && (formError.includes("Position") || formError.includes("positive")) ? "border-destructive" : ""}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Must be a unique positive whole number.
-            </p>
-          </div>
+          <p className="text-xs text-muted-foreground">
+            Must be a unique positive whole number.
+          </p>
         </div>
 
-        {/* Form Error Display */}
         {formError && (
           <Alert variant="destructive" className="mb-3 text-sm">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Validation Error</AlertTitle>
-            <AlertDescription>{formError}</AlertDescription>
           </Alert>
         )}
 
-        {/* Save Button */}
         <Button
           onClick={handleSaveAttendance}
           disabled={recordAttendanceMutation.isLoading}
@@ -297,21 +257,25 @@ const TournamentAttendanceDialog: React.FC<TournamentAttendanceDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px]"> {/* Wider dialog */}
+      <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle>Manage Attendance: {effectiveTournamentName}</DialogTitle>
           <DialogDescription>
-            Select a user without attendance and enter their attendance date and final position.
-            {tournamentStartDate && tournamentEndDate && (
+            Select a user and enter their final position. Attendance date is recorded automatically.
+            {tournamentDetails?.start_datetime && tournamentDetails?.end_datetime && (
               <span className="block text-xs mt-1">
-                Tournament runs from {formatDate(tournamentStartDate, 'PPp')} to {formatDate(tournamentEndDate, 'PPp')}.
+                Tournament: {formatDateUtil(tournamentDetails.start_datetime, 'PPp')} to {formatDateUtil(tournamentDetails.end_datetime, 'PPp')}.
               </span>
             )}
           </DialogDescription>
         </DialogHeader>
 
-        {isLoading && !tournamentDetails ? ( // Show main skeleton only if tournament details are loading
-          <div className="space-y-4 py-6"> <Skeleton className="h-10 w-full" /> <Skeleton className="h-10 w-full" /> <Skeleton className="h-10 w-full" /></div>
+        {isLoadingDetails ? (
+          <div className="space-y-4 py-6">
+            <Skeleton className="h-6 w-1/2" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-40 w-full" />
+          </div>
         ) : (
           <>
             {renderUserList()}

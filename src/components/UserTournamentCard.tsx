@@ -9,10 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Tournament, TournamentRegistration } from '@/backend/tournament_backend';
+import { Tournament } from '@/backend/tournament_backend';
 import { Uuid } from '@/backend/common';
-import { CalendarDays, Trophy } from 'lucide-react';
-import { getCurrentDateTimeString } from '@/lib/utils';
+import { CalendarDays, Trophy, CheckSquare } from 'lucide-react';
 
 const formatDate = (dateString: string | null | undefined): string => {
   if (!dateString) return 'N/A';
@@ -22,7 +21,6 @@ const formatDate = (dateString: string | null | undefined): string => {
       console.warn("Invalid date string received:", dateString);
       return dateString;
     }
-
     return format(date, 'PPp');
   } catch (error) {
     console.error("Date formatting error:", error);
@@ -33,7 +31,7 @@ const formatDate = (dateString: string | null | undefined): string => {
 interface UserTournamentCardProps {
   tournament: Tournament;
   userId: Uuid;
-  onRegister: (registrationData: TournamentRegistration) => void;
+  onRegister: (tournamentId: Uuid) => void;
   isRegistering: boolean;
 }
 
@@ -45,12 +43,7 @@ const UserTournamentCard: React.FC<UserTournamentCardProps> = ({
 }) => {
 
   const handleRegisterClick = () => {
-    const registrationData: TournamentRegistration = {
-      id_tournament: tournament.id_tournament,
-      id_user: userId,
-      registration_datetime: getCurrentDateTimeString(),
-    };
-    onRegister(registrationData);
+    onRegister(tournament.id_tournament);
   };
 
   return (
@@ -59,6 +52,7 @@ const UserTournamentCard: React.FC<UserTournamentCardProps> = ({
         <CardTitle className="text-lg font-semibold flex items-center">
           <Trophy className="mr-2 h-5 w-5 text-yellow-500" /> {tournament.name}
         </CardTitle>
+
         <CardDescription>Category ID: {tournament.id_category}</CardDescription>
       </CardHeader>
       <CardContent className="text-sm text-gray-700 dark:text-gray-400 space-y-2">
@@ -77,6 +71,7 @@ const UserTournamentCard: React.FC<UserTournamentCardProps> = ({
           disabled={isRegistering}
           size="sm"
         >
+          <CheckSquare className="mr-2 h-4 w-4" />
           {isRegistering ? 'Registering...' : 'Register'}
         </Button>
       </CardFooter>

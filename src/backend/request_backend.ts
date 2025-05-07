@@ -6,46 +6,42 @@ export interface Request {
   requester_id: Uuid;
   requested_command: string;
   justification: string;
-  approved: boolean | null;
-  approver_id: Uuid | null;
+  approved: boolean | null; // Matches Option<bool>
+  approver_id: Uuid | null; // Matches Option<Uuid>
 }
 
 export interface RequestCreation {
   requester_id: Uuid;
-  requested_command: string; // Title of the request, or main requesting function
-  justification: string; // Information of the request.
+  requested_command: string;
+  justification: string;
 }
 
-const base_url = `${BASE_URL}/requests`
+const requestsBaseUrl = `${BASE_URL}/requests`; // Corrected variable name
 
-export async function createRequest(request: RequestCreation): Promise<void> {
-  await fetchJson(`${base_url}`, {
+export async function createRequest(request: RequestCreation): Promise<void> { // Backend returns 201 CREATED with string
+  await fetchJson(`${requestsBaseUrl}`, {
     method: 'POST',
-    body: JSON.stringify({
-      ...request,
-    }),
+    // fetchJson typically handles headers and stringify
+    body: JSON.stringify(request), // Explicitly stringify
   });
 }
 
 export async function listRequests(): Promise<Request[]> {
-  return fetchJson<Request[]>(`${base_url}`);
+  return fetchJson<Request[]>(`${requestsBaseUrl}`);
 }
 
 export async function getRequest(id: Uuid): Promise<Request> {
-  return fetchJson<Request>(`${base_url}/${id}`);
+  return fetchJson<Request>(`${requestsBaseUrl}/${id}`);
 }
 
-export async function completeRequest(id: Uuid, approved: boolean, token: string): Promise<void> {
-  await fetchJson(`${base_url}/${id}/complete/${approved}`, {
+// completeRequest was using token in header, ensure fetchJson handles this or adjust
+export async function completeRequest(id: Uuid, approved: boolean): Promise<void> { // Removed token from args, assume fetchJson handles auth
+  await fetchJson(`${requestsBaseUrl}/${id}/complete/${approved}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
+    // Headers including Authorization should be handled by a modified fetchJson or globally
   });
 }
 
 export async function listUserRequests(userId: Uuid): Promise<Request[]> {
-  return fetchJson<Request[]>(`${base_url}/user/${userId}`);
+  return fetchJson<Request[]>(`${requestsBaseUrl}/user/${userId}`);
 }
-

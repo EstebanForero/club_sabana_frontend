@@ -1,16 +1,16 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
-
 import React, { useState, useMemo } from 'react';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import {
-  getEligibleTrainings,
+  getEligibleTrainingsForUser,
   getUserTrainingRegistrations,
   listTrainings,
-  registerUser as registerUserForTraining,
+  registerUserForTraining,
   Training,
   TrainingRegistration,
+  TrainingRegistrationPayload,
 } from '@/backend/training_backend';
 import { Uuid } from '@/backend/common';
 
@@ -24,7 +24,18 @@ import RegisteredTrainingCard from '@/components/RegisteredTrainingCard';
 
 export const Route = createFileRoute('/dashboard_user/training')({
   component: UserTrainingPageComponent,
-})
+  loader: async () => {
+    const userId = AuthManager.getUserId();
+    if (!userId) {
+      console.warn("User not authenticated, redirecting to login from training loader.");
+      throw redirect({
+        to: '/auth/login',
+        search: { redirect: Route.fullPath },
+      });
+    }
+    return { userId };
+  }
+});
 
 interface RegisteredTrainingDetail {
   training: Training;
@@ -32,14 +43,9 @@ interface RegisteredTrainingDetail {
 }
 
 function UserTrainingPageComponent() {
-  const userId = AuthManager.getUserId();
+  const { userId } = Route.useLoaderData();
   const queryClient = useQueryClient();
   const [registeringTrainingId, setRegisteringTrainingId] = useState<Uuid | null>(null);
-
-  if (!userId) {
-    console.error("User not authenticated for training page.");
-    throw redirect({ to: '/auth/login', search: { redirect: Route.fullPath } });
-  }
 
   const {
     data: eligibleTrainings,
@@ -48,7 +54,7 @@ function UserTrainingPageComponent() {
     error: errorEligible
   } = useQuery({
     queryKey: ['eligibleTrainings', userId],
-    queryFn: () => getEligibleTrainings(userId),
+    queryFn: () => getEligibleTrainingsForUser(userId),
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,
   });
@@ -80,8 +86,12 @@ function UserTrainingPageComponent() {
   const isError = isErrorEligible || isErrorRegistrations || isErrorAllTrainings;
   const error = errorEligible || errorRegistrations || errorAllTrainings;
 
+  // --- useMemo for processing data (remains the same) ---
   const { availableTrainings, registeredTrainingDetails } = useMemo(() => {
-    if (!allTrainingsData || !eligibleTrainings || !userRegistrations) {
+    const validUserRegistrations = Array.isArray(userRegistrations) ? userRegistrations : [];
+    const validEligibleTrainings = Array.isArray(eligibleTrainings) ? eligibleTrainings : [];
+
+    if (!allTrainingsData || !validEligibleTrainings || !validUserRegistrations) { // Check all necessary data
       return { availableTrainings: [], registeredTrainingDetails: [] };
     }
 
@@ -91,7 +101,7 @@ function UserTrainingPageComponent() {
     const registeredDetails: RegisteredTrainingDetail[] = [];
     const registeredIds = new Set<Uuid>();
 
-    userRegistrations.forEach(reg => {
+    validUserRegistrations.forEach(reg => {
       const trainingDetails = trainingsMap.get(reg.id_training);
       if (trainingDetails) {
         registeredDetails.push({ training: trainingDetails, registration: reg });
@@ -101,25 +111,28 @@ function UserTrainingPageComponent() {
       }
     });
 
-    const available = eligibleTrainings.filter(t => !registeredIds.has(t.id_training));
+    const available = validEligibleTrainings.filter(t => !registeredIds.has(t.id_training));
 
     registeredDetails.sort((a, b) =>
       new Date(b.registration.registration_datetime).getTime() - new Date(a.registration.registration_datetime).getTime()
     );
 
-
     return { availableTrainings: available, registeredTrainingDetails: registeredDetails };
+  }, [allTrainingsData, eligibleTrainings, userRegistrations]);
+  // --- End useMemo ---
 
-  }, [allTrainingsData, eligibleTrainings, userRegistrations]); // Dependencies
 
-
+  // --- registerMutation ---
   const registerMutation = useMutation({
-    mutationFn: registerUserForTraining, // Use the aliased function
+    // UPDATED mutationFn to match new backend signature
+    mutationFn: (variables: { idTraining: Uuid; payload: TrainingRegistrationPayload }) =>
+      registerUserForTraining(variables.idTraining, variables.payload),
     onMutate: (variables) => {
-      setRegisteringTrainingId(variables.id_training);
+      // Use variables.idTraining because that's what's passed now
+      setRegisteringTrainingId(variables.idTraining);
     },
-    onSuccess: (message, variables) => {
-      toast.success(message || `Successfully registered for training!`);
+    onSuccess: (createdRegistration) => { // Backend now returns the created registration
+      toast.success(`Successfully registered! Registered on: ${createdRegistration.registration_datetime}`);
       queryClient.invalidateQueries({ queryKey: ['eligibleTrainings', userId] });
       queryClient.invalidateQueries({ queryKey: ['userTrainingRegistrations', userId] });
     },
@@ -132,9 +145,17 @@ function UserTrainingPageComponent() {
     }
   });
 
-  const handleRegister = (registrationData: TrainingRegistration) => {
-    registerMutation.mutate(registrationData);
+  // UPDATED handleRegister to accept trainingId and construct payload
+  const handleRegister = (trainingId: Uuid) => { // Now only needs trainingId
+    if (!userId) {
+      toast.error("User not identified. Cannot register.");
+      return;
+    }
+    setRegisteringTrainingId(trainingId);
+    const payload: TrainingRegistrationPayload = { id_user: userId };
+    registerMutation.mutate({ idTraining: trainingId, payload }); // Pass correct variables
   };
+  // --- End registerMutation and handleRegister ---
 
 
   if (isLoading) {
@@ -176,7 +197,7 @@ function UserTrainingPageComponent() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {registeredTrainingDetails.map(({ training, registration }) => (
               <RegisteredTrainingCard
-                key={registration.id_training + registration.id_user}
+                key={registration.id_training + '-' + registration.id_user} // Ensure a unique key
                 training={training}
                 registration={registration}
               />
@@ -191,7 +212,6 @@ function UserTrainingPageComponent() {
     </div>
   );
 }
-
 
 const LoadingSkeletons: React.FC = () => (
   <div className="container mx-auto p-4 space-y-8">

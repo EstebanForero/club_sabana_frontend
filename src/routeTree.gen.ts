@@ -30,6 +30,7 @@ import { Route as DashboardadminTrainingmanagementImport } from './routes/dashbo
 import { Route as DashboardadminTournamentmanagementImport } from './routes/dashboard_admin/tournament_management'
 import { Route as DashboardadminRolemanagementImport } from './routes/dashboard_admin/role_management'
 import { Route as DashboardadminRequestsImport } from './routes/dashboard_admin/requests'
+import { Route as DashboardadminCourtsmanagementImport } from './routes/dashboard_admin/courts_management'
 import { Route as DashboardadminCategorymanagementImport } from './routes/dashboard_admin/category_management'
 import { Route as AuthSigninImport } from './routes/auth/signin'
 import { Route as AuthLoginImport } from './routes/auth/login'
@@ -158,6 +159,13 @@ const DashboardadminRequestsRoute = DashboardadminRequestsImport.update({
   getParentRoute: () => DashboardadminRoute,
 } as any)
 
+const DashboardadminCourtsmanagementRoute =
+  DashboardadminCourtsmanagementImport.update({
+    id: '/courts_management',
+    path: '/courts_management',
+    getParentRoute: () => DashboardadminRoute,
+  } as any)
+
 const DashboardadminCategorymanagementRoute =
   DashboardadminCategorymanagementImport.update({
     id: '/category_management',
@@ -242,6 +250,13 @@ declare module '@tanstack/react-router' {
       path: '/category_management'
       fullPath: '/dashboard_admin/category_management'
       preLoaderRoute: typeof DashboardadminCategorymanagementImport
+      parentRoute: typeof DashboardadminImport
+    }
+    '/dashboard_admin/courts_management': {
+      id: '/dashboard_admin/courts_management'
+      path: '/courts_management'
+      fullPath: '/dashboard_admin/courts_management'
+      preLoaderRoute: typeof DashboardadminCourtsmanagementImport
       parentRoute: typeof DashboardadminImport
     }
     '/dashboard_admin/requests': {
@@ -370,6 +385,7 @@ declare module '@tanstack/react-router' {
 
 interface DashboardadminRouteChildren {
   DashboardadminCategorymanagementRoute: typeof DashboardadminCategorymanagementRoute
+  DashboardadminCourtsmanagementRoute: typeof DashboardadminCourtsmanagementRoute
   DashboardadminRequestsRoute: typeof DashboardadminRequestsRoute
   DashboardadminRolemanagementRoute: typeof DashboardadminRolemanagementRoute
   DashboardadminTournamentmanagementRoute: typeof DashboardadminTournamentmanagementRoute
@@ -380,6 +396,7 @@ interface DashboardadminRouteChildren {
 
 const DashboardadminRouteChildren: DashboardadminRouteChildren = {
   DashboardadminCategorymanagementRoute: DashboardadminCategorymanagementRoute,
+  DashboardadminCourtsmanagementRoute: DashboardadminCourtsmanagementRoute,
   DashboardadminRequestsRoute: DashboardadminRequestsRoute,
   DashboardadminRolemanagementRoute: DashboardadminRolemanagementRoute,
   DashboardadminTournamentmanagementRoute:
@@ -442,6 +459,7 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/auth/signin': typeof AuthSigninRoute
   '/dashboard_admin/category_management': typeof DashboardadminCategorymanagementRoute
+  '/dashboard_admin/courts_management': typeof DashboardadminCourtsmanagementRoute
   '/dashboard_admin/requests': typeof DashboardadminRequestsRoute
   '/dashboard_admin/role_management': typeof DashboardadminRolemanagementRoute
   '/dashboard_admin/tournament_management': typeof DashboardadminTournamentmanagementRoute
@@ -466,6 +484,7 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/signin': typeof AuthSigninRoute
   '/dashboard_admin/category_management': typeof DashboardadminCategorymanagementRoute
+  '/dashboard_admin/courts_management': typeof DashboardadminCourtsmanagementRoute
   '/dashboard_admin/requests': typeof DashboardadminRequestsRoute
   '/dashboard_admin/role_management': typeof DashboardadminRolemanagementRoute
   '/dashboard_admin/tournament_management': typeof DashboardadminTournamentmanagementRoute
@@ -494,6 +513,7 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/auth/signin': typeof AuthSigninRoute
   '/dashboard_admin/category_management': typeof DashboardadminCategorymanagementRoute
+  '/dashboard_admin/courts_management': typeof DashboardadminCourtsmanagementRoute
   '/dashboard_admin/requests': typeof DashboardadminRequestsRoute
   '/dashboard_admin/role_management': typeof DashboardadminRolemanagementRoute
   '/dashboard_admin/tournament_management': typeof DashboardadminTournamentmanagementRoute
@@ -523,6 +543,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/signin'
     | '/dashboard_admin/category_management'
+    | '/dashboard_admin/courts_management'
     | '/dashboard_admin/requests'
     | '/dashboard_admin/role_management'
     | '/dashboard_admin/tournament_management'
@@ -546,6 +567,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/signin'
     | '/dashboard_admin/category_management'
+    | '/dashboard_admin/courts_management'
     | '/dashboard_admin/requests'
     | '/dashboard_admin/role_management'
     | '/dashboard_admin/tournament_management'
@@ -572,6 +594,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/signin'
     | '/dashboard_admin/category_management'
+    | '/dashboard_admin/courts_management'
     | '/dashboard_admin/requests'
     | '/dashboard_admin/role_management'
     | '/dashboard_admin/tournament_management'
@@ -635,6 +658,7 @@ export const routeTree = rootRoute
       "filePath": "dashboard_admin.tsx",
       "children": [
         "/dashboard_admin/category_management",
+        "/dashboard_admin/courts_management",
         "/dashboard_admin/requests",
         "/dashboard_admin/role_management",
         "/dashboard_admin/tournament_management",
@@ -672,6 +696,10 @@ export const routeTree = rootRoute
     },
     "/dashboard_admin/category_management": {
       "filePath": "dashboard_admin/category_management.tsx",
+      "parent": "/dashboard_admin"
+    },
+    "/dashboard_admin/courts_management": {
+      "filePath": "dashboard_admin/courts_management.tsx",
       "parent": "/dashboard_admin"
     },
     "/dashboard_admin/requests": {

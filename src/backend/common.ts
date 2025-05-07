@@ -1,7 +1,7 @@
 export type Uuid = string;
 
-//export const BASE_URL = 'http://127.0.0.1:8004'
-export const BASE_URL = 'https://club-sabana-backend.fly.dev'
+export const BASE_URL = 'http://127.0.0.1:8004'
+//export const BASE_URL = 'https://club-sabana-backend.fly.dev'
 
 export enum LevelName {
   BEGINNER = "BEGGINER",

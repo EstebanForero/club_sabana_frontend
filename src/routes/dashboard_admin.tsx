@@ -13,6 +13,7 @@ const sidebarLinks: SidebarLink[] = [
   { icon: ShieldUser, text: "Role management", to: "/dashboard_admin/role_management" },
   { icon: ChartBarStacked, text: "Category Management", to: "/dashboard_admin/category_management" },
   { icon: Trophy, text: "Tournament management", to: "/dashboard_admin/tournament_management" },
+  { icon: Dumbbell, text: "Training management", to: "/dashboard_admin/training_management" },
   { icon: UsersRound, text: "User management", to: "/dashboard_admin/user_management" },
   { icon: LandPlot, text: "Court management", to: "/dashboard_admin/courts_management" },
 ];

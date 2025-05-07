@@ -26,7 +26,7 @@ const TournamentComponent = ({ tournament, enableAdminControls = false }: Props)
   const deleteMutation = useMutation({
     mutationFn: deleteTournament,
     onSuccess: (message) => {
-      toast.success(message || 'Tournament deleted successfully!');
+      toast.success('Tournament deleted successfully!');
       queryClient.invalidateQueries({ queryKey: ['tournaments'] });
     },
     onError: (error: Error) => {

@@ -12,8 +12,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle } from 'lucide-react';
 
-import { getTournament, updateTournament, Tournament } from '@/backend/tournament_backend';
+
+import { getTournament, updateTournament, Tournament, TournamentUpdatePayload } from '@/backend/tournament_backend';
 import TournamentForm, { TournamentFormData } from './TournamentForm';
 import { Uuid } from '@/backend/common';
 
@@ -30,22 +33,23 @@ const TournamentEdit: React.FC<TournamentEditProps> = ({
 }) => {
   const queryClient = useQueryClient();
 
-  const { data: tournamentData, isLoading: isLoadingTournament, isError } = useQuery({
-    queryKey: ['tournaments', tournamentId],
+  const { data: tournamentData, isLoading: isLoadingTournament, isError, error: queryError, isFetching } = useQuery({
+    queryKey: ['tournamentDetails', tournamentId],
     queryFn: () => getTournament(tournamentId!),
     enabled: !!tournamentId && isOpen,
     staleTime: 5 * 60 * 1000,
   });
 
   const updateMutation = useMutation({
-    mutationFn: updateTournament,
-    onSuccess: (_, updatedTournament) => {
+    mutationFn: (payload: { id: Uuid, data: TournamentUpdatePayload }) => updateTournament(payload.id, payload.data),
+    onSuccess: (updatedTournament) => {
       toast.success(`Tournament "${updatedTournament.name}" updated successfully!`);
+      queryClient.invalidateQueries({ queryKey: ['allTournaments'] });
       queryClient.invalidateQueries({ queryKey: ['tournaments'] });
-      queryClient.invalidateQueries({ queryKey: ['tournaments', updatedTournament.id_tournament] });
+      queryClient.invalidateQueries({ queryKey: ['tournamentDetails', updatedTournament.id_tournament] });
       onOpenChange(false);
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables) => {
       console.error("Error updating tournament:", error);
       toast.error(`Failed to update tournament: ${error.message || 'Unknown error'}`);
     },
@@ -56,15 +60,14 @@ const TournamentEdit: React.FC<TournamentEditProps> = ({
       toast.error("Cannot update tournament: Invalid ID.");
       return;
     }
-    console.log("Submitting Tournament Update:", values);
-    const updatedTournamentData: Tournament = {
-      id_tournament: tournamentId,
+    const tournamentUpdatePayload: TournamentUpdatePayload = {
       name: values.name,
       id_category: values.id_category as Uuid,
+      id_court: values.id_court as Uuid,
       start_datetime: values.start_datetime,
       end_datetime: values.end_datetime,
     };
-    updateMutation.mutate(updatedTournamentData);
+    updateMutation.mutate({ id: tournamentId, data: tournamentUpdatePayload });
   }
 
   const handleCancel = () => {
@@ -74,51 +77,50 @@ const TournamentEdit: React.FC<TournamentEditProps> = ({
   const renderContent = () => {
     if (!isOpen) return null;
 
-    if (isLoadingTournament) {
+    if (isLoadingTournament || (isFetching && !tournamentData)) {
       return (
-        <div className="space-y-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Skeleton className="h-4 w-16 justify-self-end" />
-            <Skeleton className="h-10 w-full col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Skeleton className="h-4 w-16 justify-self-end" />
-            <Skeleton className="h-10 w-full col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Skeleton className="h-4 w-16 justify-self-end" />
-            <Skeleton className="h-10 w-full col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Skeleton className="h-4 w-16 justify-self-end" />
-            <Skeleton className="h-10 w-full col-span-3" />
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ))}
         </div>
       );
     }
 
     if (isError || !tournamentData) {
       return (
-        <p className="text-destructive py-4">
-          Error loading tournament data
-        </p>
+        <Alert variant="destructive" className='my-4'>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error Loading Tournament Data</AlertTitle>
+          <AlertDescription>{queryError instanceof Error ? queryError.message : "Could not load details."}</AlertDescription>
+        </Alert>
       );
     }
+
+    const initialFormData = {
+      ...tournamentData,
+      id_court: undefined,
+    };
+
 
     return (
       <TournamentForm
         mode="edit"
-        initialData={tournamentData}
+        initialData={initialFormData}
         onSubmit={handleFormSubmit}
         isLoading={updateMutation.isLoading}
         onCancel={handleCancel}
+        formId="tournament-edit-dialog-form"
       />
     );
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[525px]">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Edit Tournament</DialogTitle>
           <DialogDescription>
@@ -140,22 +142,16 @@ const TournamentEdit: React.FC<TournamentEditProps> = ({
             </Button>
             <Button
               type="submit"
-              form="tournament-form-edit"
-              disabled={updateMutation.isLoading}
+              form="tournament-edit-dialog-form"
+              disabled={updateMutation.isLoading || isFetching}
             >
               {updateMutation.isLoading ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogFooter>
         )}
-        {(isError || !tournamentData && !isLoadingTournament) && (
+        {(isError && !isLoadingTournament) && (
           <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={handleCancel}
-            >
-              Close
-            </Button>
+            <Button variant="outline" onClick={handleCancel}>Close</Button>
           </DialogFooter>
         )}
       </DialogContent>

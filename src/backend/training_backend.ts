@@ -11,15 +11,14 @@ export interface Training {
   minimum_payment: number | null; // Matches Option<f64>
 }
 
-// This DTO is sent to the backend for creation
 export interface TrainingCreationPayload {
   name: string;
   id_category: Uuid;
-  trainer_id: Uuid; // Added
+  trainer_id: Uuid;
   start_datetime: string;
   end_datetime: string;
-  minimum_payment?: number | null; // Optional, matches Option<f64>
-  id_court?: Uuid; // Optional court ID
+  minimum_payment: number;
+  id_court?: Uuid;
 }
 
 // This DTO is sent to the backend for updates

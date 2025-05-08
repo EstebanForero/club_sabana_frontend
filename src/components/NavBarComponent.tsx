@@ -4,7 +4,7 @@ import React from 'react'
 
 const NavBarComponent = () => {
   return (
-    <div className="p-2 flex gap-4 text-lg absolute">
+    <div className="p-2 flex gap-4 text-lg absolute z-50">
       <Link
         to="/"
         activeProps={{

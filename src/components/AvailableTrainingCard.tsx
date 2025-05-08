@@ -12,6 +12,7 @@ import { Training } from '@/backend/training_backend';
 import { Uuid } from '@/backend/common';
 import { formatDate } from '@/lib/utils';
 import { CalendarDays, DollarSign, CheckSquare } from 'lucide-react';
+import EventCourtBadge from './EventCourtBadge';
 
 interface AvailableTrainingCardProps {
   training: Training;

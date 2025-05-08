@@ -40,11 +40,8 @@ export interface TrainingRegistration {
   attendance_datetime: string | null;   // YYYY-MM-DD HH:MM:SS
 }
 
-// For registering, only user_id might be needed if id_training is in path
 export interface TrainingRegistrationPayload {
   id_user: Uuid;
-  // id_training will be part of the path
-  // registration_datetime, attended, attendance_datetime are set by backend on creation/update
 }
 
 export interface MarkAttendancePayload {

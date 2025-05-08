@@ -22,6 +22,7 @@ import { AlertTriangle, PlusCircle, LayoutGrid } from 'lucide-react'; // Icons
 import CourtCreationForm, { CourtCreationFormData } from '@/components/CourtCreationForm';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import CourtCard from '@/components/CourtCard';
+import CourtReservationsDialog from '@/components/CourtReservationsDialog';
 
 // --- TanStack Router Route Definition ---
 export const Route = createFileRoute('/dashboard_admin/courts_management')({
@@ -33,8 +34,11 @@ export const Route = createFileRoute('/dashboard_admin/courts_management')({
 function AdminCourtsManagementPage() {
   const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  // State to track which court is currently being deleted for UI feedback
   const [deletingCourtId, setDeletingCourtId] = useState<Uuid | null>(null);
+
+  // --- State for Reservations Dialog ---
+  const [isReservationsDialogOpen, setIsReservationsDialogOpen] = useState(false);
+  const [selectedCourtForReservations, setSelectedCourtForReservations] = useState<Court | null>(null);
 
   // Fetch all courts
   const { data: courts, isLoading, isError, error } = useQuery({
@@ -89,7 +93,11 @@ function AdminCourtsManagementPage() {
     deleteCourtMutation.mutate(courtId);
   };
 
-  // --- Render Logic ---
+  const handleViewReservations = (court: Court) => {
+    setSelectedCourtForReservations(court);
+    setIsReservationsDialogOpen(true);
+  };
+
   const renderCourtList = () => {
     if (isLoading) {
       return (
@@ -135,6 +143,7 @@ function AdminCourtsManagementPage() {
             court={court}
             onDelete={handleDeleteCourt}
             isDeleting={deletingCourtId === court.id_court}
+            onViewReservations={handleViewReservations}
           />
         ))}
       </div>
@@ -177,7 +186,7 @@ function AdminCourtsManagementPage() {
               </Button>
               <Button
                 type="submit"
-                form="court-create-dialog-form" // Link to the form
+                form="court-create-dialog-form"
                 disabled={createCourtMutation.isLoading}
               >
                 {createCourtMutation.isLoading ? 'Creating...' : 'Create Court'}
@@ -188,6 +197,12 @@ function AdminCourtsManagementPage() {
       </div>
 
       {renderCourtList()}
+
+      <CourtReservationsDialog
+        court={selectedCourtForReservations}
+        isOpen={isReservationsDialogOpen}
+        onOpenChange={setIsReservationsDialogOpen}
+      />
     </div>
   );
 }

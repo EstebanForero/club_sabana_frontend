@@ -1,31 +1,28 @@
 import { Uuid, IdType, URol, BASE_URL } from './common';
 import { fetchJson } from './utils';
 
-// User interface remains the same as it represents the full DB entity (including password)
-// which might not be directly exposed or used in all frontend contexts.
 export interface User {
   id_user: Uuid;
   first_name: string;
   last_name: string;
-  birth_date: string; // YYYY-MM-DD
-  registration_date: string; // YYYY-MM-DD HH:MM:SS
+  birth_date: string;
+  registration_date: string;
   email: string;
   email_verified: boolean;
   phone_number: string;
   country_code: string;
-  password: string; // Sensitive, handle with care
+  password: string;
   identification_number: string;
   identification_type: IdType;
   user_rol: URol;
 }
 
-// UserInfo is what's typically returned by GET requests (password omitted)
 export interface UserInfo {
   id_user: Uuid;
   first_name: string;
   last_name: string;
-  birth_date: string; // YYYY-MM-DD
-  registration_date: string; // YYYY-MM-DD HH:MM:SS
+  birth_date: string;
+  registration_date: string;
   email: string;
   email_verified: boolean;
   phone_number: string;
@@ -35,15 +32,14 @@ export interface UserInfo {
   user_rol: URol;
 }
 
-// UserCreation remains largely the same for creating/updating user data
 export interface UserCreation {
   first_name: string;
   last_name: string;
-  birth_date: string; // YYYY-MM-DD
+  birth_date: string;
   email: string;
   phone_number: string;
   country_code: string;
-  password: string; // For registration or password change
+  password: string;
   identification_number: string;
   identification_type: IdType;
 }
@@ -53,9 +49,8 @@ export interface UserLogInInfo {
   password: string;
 }
 
-// This matches the ApiLogInResponse from the backend
 export interface OnLogInInfo {
-  user_id: Uuid; // Changed from string to Uuid for consistency
+  user_id: Uuid;
   user_rol: URol;
   token: string;
 }
@@ -71,7 +66,6 @@ export interface VerifyEmailPayload {
 
 const usersBaseUrl = `${BASE_URL}/users`;
 
-// registerUser now returns the created UserInfo
 export async function registerUser(user: UserCreation): Promise<UserInfo> {
   return fetchJson<UserInfo>(`${usersBaseUrl}/register`, {
     method: 'POST',
@@ -79,24 +73,22 @@ export async function registerUser(user: UserCreation): Promise<UserInfo> {
   });
 }
 
-// updateUser now returns the updated UserInfo
 export async function updateUser(userId: Uuid, userUpdate: UserCreation): Promise<UserInfo> {
-  return fetchJson<UserInfo>(`${usersBaseUrl}/${userId}`, { // Path updated
+  return fetchJson<UserInfo>(`${usersBaseUrl}/${userId}`, {
     method: 'PUT',
     body: JSON.stringify(userUpdate),
   });
 }
 
-// updateUserRol now returns the updated UserInfo
 export async function updateUserRol(userId: Uuid, payload: UpdateUserRolePayload): Promise<UserInfo> {
-  return fetchJson<UserInfo>(`${usersBaseUrl}/${userId}/role`, { // Path updated
+  return fetchJson<UserInfo>(`${usersBaseUrl}/${userId}/role`, {
     method: 'PUT',
-    body: JSON.stringify(payload), // Send payload in body
+    body: JSON.stringify(payload),
   });
 }
 
 export async function logInUser(logInInfo: UserLogInInfo): Promise<OnLogInInfo> {
-  return fetchJson<OnLogInInfo>(`${usersBaseUrl}/login`, { // Path updated
+  return fetchJson<OnLogInInfo>(`${usersBaseUrl}/login`, {
     method: 'POST',
     body: JSON.stringify(logInInfo),
   });

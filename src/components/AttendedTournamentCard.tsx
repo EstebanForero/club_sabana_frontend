@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Tournament, TournamentAttendance } from '@/backend/tournament_backend';
 import { CalendarDays, Trophy, Medal, Clock } from 'lucide-react';
+import EventCourtBadge from './EventCourtBadge';
 
 const formatDate = (dateString: string | null | undefined, formatString = 'PPp'): string => {
   if (!dateString) return 'N/A';
@@ -46,6 +47,7 @@ const AttendedTournamentCard: React.FC<AttendedTournamentCardProps> = ({
         <CardDescription className="text-xs">
           {formatDate(tournament.start_datetime, 'P')} - {formatDate(tournament.end_datetime, 'P')}
         </CardDescription>
+        <EventCourtBadge eventId={tournament.id_tournament} eventType="tournament" className="mt-1 text-xs" />
       </CardHeader>
       {/* <CardContent className="text-sm text-gray-700 dark:text-gray-400 space-y-1 pb-2">
                 <div className="flex items-center text-xs">

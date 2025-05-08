@@ -12,6 +12,7 @@ import {
 import { Tournament } from '@/backend/tournament_backend';
 import { Uuid } from '@/backend/common';
 import { CalendarDays, Trophy, CheckSquare } from 'lucide-react';
+import EventCourtBadge from './EventCourtBadge';
 
 const formatDate = (dateString: string | null | undefined): string => {
   if (!dateString) return 'N/A';
@@ -52,8 +53,8 @@ const UserTournamentCard: React.FC<UserTournamentCardProps> = ({
         <CardTitle className="text-lg font-semibold flex items-center">
           <Trophy className="mr-2 h-5 w-5 text-yellow-500" /> {tournament.name}
         </CardTitle>
-
         <CardDescription>Category ID: {tournament.id_category}</CardDescription>
+        <EventCourtBadge eventId={tournament.id_tournament} eventType="tournament" className="mt-1 text-xs" />
       </CardHeader>
       <CardContent className="text-sm text-gray-700 dark:text-gray-400 space-y-2">
         <div className="flex items-center">

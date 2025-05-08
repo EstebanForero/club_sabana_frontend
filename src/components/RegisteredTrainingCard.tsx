@@ -10,6 +10,7 @@ import {
 import { Training, TrainingRegistration } from '@/backend/training_backend';
 import { formatDate } from '@/lib/utils';
 import { CalendarDays, DollarSign, CheckCircle, CalendarCheck, CalendarX } from 'lucide-react';
+import EventCourtBadge from './EventCourtBadge';
 
 interface RegisteredTrainingCardProps {
   training: Training;
@@ -25,6 +26,7 @@ const RegisteredTrainingCard: React.FC<RegisteredTrainingCardProps> = ({
       <CardHeader>
         <CardTitle className="text-lg font-semibold">{training.name}</CardTitle>
         <CardDescription>Category ID: {training.id_category}</CardDescription>
+        <EventCourtBadge eventId={training.id_training} eventType="training" className="mt-1 text-xs" />
       </CardHeader>
       <CardContent className="text-sm text-gray-700 dark:text-gray-400 space-y-1.5">
         <div className="flex items-center">

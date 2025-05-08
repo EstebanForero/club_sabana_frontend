@@ -1,4 +1,4 @@
-import { BASE_URL, Uuid } from './common'; // Added string
+import { BASE_URL, Uuid } from './common';
 import { fetchJson } from './utils';
 
 export interface Court {

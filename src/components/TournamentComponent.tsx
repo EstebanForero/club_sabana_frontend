@@ -12,6 +12,7 @@ import { Uuid } from '@/backend/common';
 import TournamentEdit from './TournamentEdit';
 import AdminTournamentDetailsDialog from './AdminTournamentDetailsDialog';
 import { formatDate } from '@/lib/utils';
+import EventCourtBadge from './EventCourtBadge';
 
 type Props = {
   tournament: Tournament;
@@ -50,6 +51,7 @@ const TournamentComponent = ({ tournament, enableAdminControls = false }: Props)
         <CardHeader>
           <CardTitle className="text-lg font-semibold">{tournament.name}</CardTitle>
           <CardDescription>Category ID: {tournament.id_category}</CardDescription>
+          <EventCourtBadge eventId={tournament.id_tournament} eventType="tournament" className="mt-1 text-xs" />
         </CardHeader>
         <CardContent className="text-sm text-gray-700 dark:text-gray-400 space-y-1">
           <p><span className="font-medium">Starts:</span> {formatDate(tournament.start_datetime)}</p>

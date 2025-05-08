@@ -1,21 +1,21 @@
-// src/components/trainings/TrainingComponent.tsx
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
-import { Training, deleteTraining } from '@/backend/training_backend'; // Adjust path
+import { Training, deleteTraining } from '@/backend/training_backend';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Pencil, Trash2, Users, DollarSign, CalendarDays } from 'lucide-react'; // Added icons
+import { Pencil, Trash2, Users, DollarSign, CalendarDays } from 'lucide-react';
 import { Uuid } from '@/backend/common';
-import TrainingEdit from './TrainingEdit'; // Import training edit dialog
+import TrainingEdit from './TrainingEdit';
 import AdminTrainingRegistrationsDialog from './AdminTrainingRegistrationsDialog';
+import EventCourtBadge from './EventCourtBadge';
 
 type Props = {
   training: Training;
-  enableAdminControls?: boolean; // Use this to show admin buttons
+  enableAdminControls?: boolean;
 };
 
 // Helper
@@ -27,13 +27,13 @@ const formatDate = (dateString: string | null | undefined, formatString = 'PPp')
 const TrainingComponent: React.FC<Props> = ({ training, enableAdminControls = false }) => {
   const queryClient = useQueryClient();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isRegDialogOpen, setIsRegDialogOpen] = useState(false); // State for registrations dialog
+  const [isRegDialogOpen, setIsRegDialogOpen] = useState(false);
 
   const deleteMutation = useMutation({
     mutationFn: deleteTraining,
-    onSuccess: (message) => {
-      toast.success(message || 'Training deleted successfully!');
-      queryClient.invalidateQueries({ queryKey: ['trainings'] }); // Invalidate the list
+    onSuccess: () => {
+      toast.success('Training deleted successfully!');
+      queryClient.invalidateQueries({ queryKey: ['trainings'] });
     },
     onError: (error: Error) => {
       toast.error(`Failed to delete training: ${error.message || 'Unknown error'}`);
@@ -42,7 +42,7 @@ const TrainingComponent: React.FC<Props> = ({ training, enableAdminControls = fa
 
   const handleDelete = () => deleteMutation.mutate(training.id_training);
   const handleEdit = () => setIsEditDialogOpen(true);
-  const handleViewRegistrations = () => setIsRegDialogOpen(true); // Open registrations dialog
+  const handleViewRegistrations = () => setIsRegDialogOpen(true);
 
   return (
     <>
@@ -50,11 +50,12 @@ const TrainingComponent: React.FC<Props> = ({ training, enableAdminControls = fa
         <CardHeader>
           <CardTitle className="text-lg font-semibold">{training.name}</CardTitle>
           <CardDescription>Category ID: {training.id_category}</CardDescription>
+          <EventCourtBadge eventId={training.id_training} eventType="training" className="mt-1 text-xs" />
         </CardHeader>
         <CardContent className="text-sm text-gray-700 dark:text-gray-400 space-y-1.5">
           <p className='flex items-center'><CalendarDays className="mr-2 h-4 w-4 text-muted-foreground" /> <span className="font-medium">Starts:</span> {formatDate(training.start_datetime)}</p>
           <p className='flex items-center'><CalendarDays className="mr-2 h-4 w-4 text-muted-foreground" /> <span className="font-medium">Ends:</span> {formatDate(training.end_datetime)}</p>
-          <p className='flex items-center'><DollarSign className="mr-2 h-4 w-4 text-muted-foreground" /> <span className="font-medium">Min. Payment:</span> ${training.minimum_payment.toFixed(2)}</p>
+          <p className='flex items-center'><DollarSign className="mr-2 h-4 w-4 text-muted-foreground" /> <span className="font-medium">Min. Payment:</span> ${(training.minimum_payment ?? 0.0).toFixed(2)}</p>
         </CardContent>
         {enableAdminControls && (
           <CardFooter className="flex justify-end gap-2 flex-wrap">

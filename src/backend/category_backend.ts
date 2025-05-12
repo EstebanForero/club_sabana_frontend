@@ -117,3 +117,15 @@ export async function checkUserEligibility(categoryId: Uuid, userId: Uuid): Prom
     return false;
   }
 }
+
+export async function updateUserCategoryLevel(
+  categoryId: Uuid,
+  userId: Uuid,
+  levelName: LevelName
+): Promise<void> {
+  const url = `${categoriesBaseUrl}/${categoryId}/user/${userId}/level/${levelName}`;
+
+  await fetchJson<string>(url, {
+    method: 'PUT',
+  });
+}

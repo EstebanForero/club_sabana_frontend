@@ -102,6 +102,18 @@ export async function registerUserInCategory(categoryId: Uuid, userId: Uuid): Pr
   });
 }
 
+
+export async function deleteUserFromCategory(
+  categoryId: Uuid,
+  userId: Uuid
+): Promise<void> {
+  const url = `${categoriesBaseUrl}/${categoryId}/user/${userId}`;
+
+  await fetchJson<string>(url, {
+    method: 'DELETE',
+  });
+}
+
 export async function checkUserEligibility(categoryId: Uuid, userId: Uuid): Promise<boolean> { // Backend returns Json<bool>
   // The backend returns Json(true) on success, or an error.
   // fetchJson will throw on error status codes. If it resolves, eligibility is true.

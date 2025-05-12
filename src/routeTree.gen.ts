@@ -32,6 +32,7 @@ import { Route as DashboardadminTournamentmanagementImport } from './routes/dash
 import { Route as DashboardadminRolemanagementImport } from './routes/dashboard_admin/role_management'
 import { Route as DashboardadminRequestsImport } from './routes/dashboard_admin/requests'
 import { Route as DashboardadminCourtsmanagementImport } from './routes/dashboard_admin/courts_management'
+import { Route as DashboardadminCategoryuserImport } from './routes/dashboard_admin/category_user'
 import { Route as DashboardadminCategorymanagementImport } from './routes/dashboard_admin/category_management'
 import { Route as AuthSigninImport } from './routes/auth/signin'
 import { Route as AuthLoginImport } from './routes/auth/login'
@@ -174,6 +175,14 @@ const DashboardadminCourtsmanagementRoute =
     getParentRoute: () => DashboardadminRoute,
   } as any)
 
+const DashboardadminCategoryuserRoute = DashboardadminCategoryuserImport.update(
+  {
+    id: '/category_user',
+    path: '/category_user',
+    getParentRoute: () => DashboardadminRoute,
+  } as any,
+)
+
 const DashboardadminCategorymanagementRoute =
   DashboardadminCategorymanagementImport.update({
     id: '/category_management',
@@ -258,6 +267,13 @@ declare module '@tanstack/react-router' {
       path: '/category_management'
       fullPath: '/dashboard_admin/category_management'
       preLoaderRoute: typeof DashboardadminCategorymanagementImport
+      parentRoute: typeof DashboardadminImport
+    }
+    '/dashboard_admin/category_user': {
+      id: '/dashboard_admin/category_user'
+      path: '/category_user'
+      fullPath: '/dashboard_admin/category_user'
+      preLoaderRoute: typeof DashboardadminCategoryuserImport
       parentRoute: typeof DashboardadminImport
     }
     '/dashboard_admin/courts_management': {
@@ -400,6 +416,7 @@ declare module '@tanstack/react-router' {
 
 interface DashboardadminRouteChildren {
   DashboardadminCategorymanagementRoute: typeof DashboardadminCategorymanagementRoute
+  DashboardadminCategoryuserRoute: typeof DashboardadminCategoryuserRoute
   DashboardadminCourtsmanagementRoute: typeof DashboardadminCourtsmanagementRoute
   DashboardadminRequestsRoute: typeof DashboardadminRequestsRoute
   DashboardadminRolemanagementRoute: typeof DashboardadminRolemanagementRoute
@@ -411,6 +428,7 @@ interface DashboardadminRouteChildren {
 
 const DashboardadminRouteChildren: DashboardadminRouteChildren = {
   DashboardadminCategorymanagementRoute: DashboardadminCategorymanagementRoute,
+  DashboardadminCategoryuserRoute: DashboardadminCategoryuserRoute,
   DashboardadminCourtsmanagementRoute: DashboardadminCourtsmanagementRoute,
   DashboardadminRequestsRoute: DashboardadminRequestsRoute,
   DashboardadminRolemanagementRoute: DashboardadminRolemanagementRoute,
@@ -476,6 +494,7 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/auth/signin': typeof AuthSigninRoute
   '/dashboard_admin/category_management': typeof DashboardadminCategorymanagementRoute
+  '/dashboard_admin/category_user': typeof DashboardadminCategoryuserRoute
   '/dashboard_admin/courts_management': typeof DashboardadminCourtsmanagementRoute
   '/dashboard_admin/requests': typeof DashboardadminRequestsRoute
   '/dashboard_admin/role_management': typeof DashboardadminRolemanagementRoute
@@ -502,6 +521,7 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/signin': typeof AuthSigninRoute
   '/dashboard_admin/category_management': typeof DashboardadminCategorymanagementRoute
+  '/dashboard_admin/category_user': typeof DashboardadminCategoryuserRoute
   '/dashboard_admin/courts_management': typeof DashboardadminCourtsmanagementRoute
   '/dashboard_admin/requests': typeof DashboardadminRequestsRoute
   '/dashboard_admin/role_management': typeof DashboardadminRolemanagementRoute
@@ -532,6 +552,7 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/auth/signin': typeof AuthSigninRoute
   '/dashboard_admin/category_management': typeof DashboardadminCategorymanagementRoute
+  '/dashboard_admin/category_user': typeof DashboardadminCategoryuserRoute
   '/dashboard_admin/courts_management': typeof DashboardadminCourtsmanagementRoute
   '/dashboard_admin/requests': typeof DashboardadminRequestsRoute
   '/dashboard_admin/role_management': typeof DashboardadminRolemanagementRoute
@@ -563,6 +584,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/signin'
     | '/dashboard_admin/category_management'
+    | '/dashboard_admin/category_user'
     | '/dashboard_admin/courts_management'
     | '/dashboard_admin/requests'
     | '/dashboard_admin/role_management'
@@ -588,6 +610,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/signin'
     | '/dashboard_admin/category_management'
+    | '/dashboard_admin/category_user'
     | '/dashboard_admin/courts_management'
     | '/dashboard_admin/requests'
     | '/dashboard_admin/role_management'
@@ -616,6 +639,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/signin'
     | '/dashboard_admin/category_management'
+    | '/dashboard_admin/category_user'
     | '/dashboard_admin/courts_management'
     | '/dashboard_admin/requests'
     | '/dashboard_admin/role_management'
@@ -681,6 +705,7 @@ export const routeTree = rootRoute
       "filePath": "dashboard_admin.tsx",
       "children": [
         "/dashboard_admin/category_management",
+        "/dashboard_admin/category_user",
         "/dashboard_admin/courts_management",
         "/dashboard_admin/requests",
         "/dashboard_admin/role_management",
@@ -720,6 +745,10 @@ export const routeTree = rootRoute
     },
     "/dashboard_admin/category_management": {
       "filePath": "dashboard_admin/category_management.tsx",
+      "parent": "/dashboard_admin"
+    },
+    "/dashboard_admin/category_user": {
+      "filePath": "dashboard_admin/category_user.tsx",
       "parent": "/dashboard_admin"
     },
     "/dashboard_admin/courts_management": {

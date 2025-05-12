@@ -3,32 +3,31 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 
 import { getAllUsers, UserInfo } from '@/backend/user_backend';
-import { URol } from '@/backend/common';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, Search, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import UserCategoryManagementCard from '@/components/UserCategoryManagementCard';
+import AdminUserCategoryCard from '@/components/AdminUserCategoryCard';
 
-export const Route = createFileRoute('/dashboard_trainer/user_categories')({
-  component: TrainerUserCategoryPage,
+export const Route = createFileRoute('/dashboard_admin/category_user')({
+  component: AdminUserCategoryPage,
 });
 
-function TrainerUserCategoryPage() {
+function AdminUserCategoryPage() {
   const [searchEmail, setSearchEmail] = useState('');
 
   const { data: allUsers, isLoading, isError, error } = useQuery({
-    queryKey: ['allUsersForTrainerCategoryMgmt'],
+    queryKey: ['allUsersForAdminCategoryMgmt'],
     queryFn: getAllUsers,
-    staleTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 
   const filteredUsers = useMemo(() => {
     if (!allUsers) return [];
 
     if (searchEmail.trim() === '') {
-      return allUsers;
+      return [...allUsers].sort((a, b) => a.email.localeCompare(b.email));
     }
 
     const lowerCaseSearch = searchEmail.toLowerCase();
@@ -42,13 +41,13 @@ function TrainerUserCategoryPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center">
           <Users className="h-7 w-7 mr-3 text-primary" />
-          <h1 className="text-2xl md:text-3xl font-bold">Manage User Levels</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">User Category Management (Admin)</h1>
         </div>
         <div className="relative w-full sm:w-auto sm:max-w-xs">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search user by email..."
+            placeholder="Search any user by email..."
             value={searchEmail}
             onChange={(e) => setSearchEmail(e.target.value)}
             className="pl-8"
@@ -57,7 +56,7 @@ function TrainerUserCategoryPage() {
         </div>
       </div>
       <p className="text-muted-foreground">
-        Find users and update their skill levels within specific categories.
+        Find users (any role) and view or remove their category registrations.
       </p>
 
 
@@ -74,33 +73,27 @@ function TrainerUserCategoryPage() {
 
       {isError && !isLoading && (
         <Alert variant="destructive" className="mt-4">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Error Loading Users</AlertTitle>
-          <AlertDescription>
-            Could not fetch user list. {error instanceof Error ? error.message : 'Unknown error'}
-          </AlertDescription>
+          Error fetching data
         </Alert>
       )}
-
 
       {!isLoading && !isError && (
         <>
           {filteredUsers.length > 0 ? (
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4'>
               {filteredUsers.map((user) => (
-                <UserCategoryManagementCard key={user.id_user} user={user} />
+                <AdminUserCategoryCard key={user.id_user} user={user} />
               ))}
             </div>
           ) : (
             <p className="text-center text-muted-foreground py-12">
               {searchEmail.trim() === ''
-                ? 'Search for a user by email to manage their category levels.'
+                ? 'Enter an email to search for a user.'
                 : `No users found matching "${searchEmail}".`}
             </p>
           )}
         </>
       )}
-
     </div>
   );
 }

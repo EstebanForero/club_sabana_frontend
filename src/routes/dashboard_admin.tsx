@@ -12,6 +12,7 @@ const sidebarLinks: SidebarLink[] = [
   { icon: Mail, text: "Requests", to: "/dashboard_admin/requests" },
   { icon: ShieldUser, text: "Role management", to: "/dashboard_admin/role_management" },
   { icon: ChartBarStacked, text: "Category Management", to: "/dashboard_admin/category_management" },
+  { icon: ChartBarStacked, text: "Category user", to: "/dashboard_admin/category_user" },
   { icon: Trophy, text: "Tournament management", to: "/dashboard_admin/tournament_management" },
   { icon: Dumbbell, text: "Training management", to: "/dashboard_admin/training_management" },
   { icon: UsersRound, text: "User management", to: "/dashboard_admin/user_management" },

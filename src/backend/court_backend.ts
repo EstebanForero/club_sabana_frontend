@@ -1,3 +1,4 @@
+import { convertLocalToUtcString, displayUtcAsLocal } from '@/lib/utils';
 import { BASE_URL, Uuid } from './common';
 import { fetchJson } from './utils';
 
@@ -41,9 +42,12 @@ export async function deleteCourt(idCourt: Uuid): Promise<void> {
   await fetchJson<string>(`${courtsBaseUrl}/${idCourt}`, { method: 'DELETE' });
 }
 
+// Interface for parameters when fetching reservations
 export interface GetCourtReservationsParams {
-  start_datetime_filter?: string;
-  end_datetime_filter?: string;
+  // These filters will be sent as local time strings from the frontend
+  // and converted to UTC before being appended to the URL.
+  start_datetime_filter?: string; // User inputs local time
+  end_datetime_filter?: string;   // User inputs local time
 }
 
 export async function getReservationsForCourt(
@@ -53,50 +57,61 @@ export async function getReservationsForCourt(
   const queryParams = new URLSearchParams();
 
   if (params?.start_datetime_filter) {
-    queryParams.append('start_datetime_filter', params.start_datetime_filter);
+    const utcStart = convertLocalToUtcString(params.start_datetime_filter);
+    if (utcStart) {
+      queryParams.append('start_datetime_filter', utcStart);
+    }
   }
   if (params?.end_datetime_filter) {
-    queryParams.append('end_datetime_filter', params.end_datetime_filter);
+    const utcEnd = convertLocalToUtcString(params.end_datetime_filter);
+    if (utcEnd) {
+      queryParams.append('end_datetime_filter', utcEnd);
+    }
   }
 
   const queryString = queryParams.toString();
   const url = `${courtsBaseUrl}/${idCourt}/reservations${queryString ? `?${queryString}` : ''}`;
 
-  console.log("Requesting URL:", url);
-  return fetchJson<CourtReservation[]>(url);
+  console.log("Requesting Reservations URL with UTC filters:", url);
+  const reservations = await fetchJson<CourtReservation[]>(url);
+
+  return reservations.map(reservation => ({
+    ...reservation,
+    start_reservation_datetime: displayUtcAsLocal(reservation.start_reservation_datetime),
+    end_reservation_datetime: displayUtcAsLocal(reservation.end_reservation_datetime),
+  }));
 }
 
-
-// --- New Functions ---
-
-/**
- * Fetches the specific court reservation associated with a training ID.
- * Returns null if no reservation exists or if the fetch fails with a 404.
- * Throws for other errors.
- */
 export async function getReservationByTrainingId(trainingId: Uuid): Promise<CourtReservation | null> {
   try {
-    return await fetchJson<CourtReservation>(`${reservationsBaseUrl}/by-training/${trainingId}`);
+    const reservation = await fetchJson<CourtReservation>(`${reservationsBaseUrl}/by-training/${trainingId}`);
+    if (!reservation) return null; // If fetchJson can return null directly on 404
+    return {
+      ...reservation,
+      start_reservation_datetime: displayUtcAsLocal(reservation.start_reservation_datetime),
+      end_reservation_datetime: displayUtcAsLocal(reservation.end_reservation_datetime),
+    };
   } catch (error: any) {
-    if (error?.status === 404) { // Assuming fetchJson throws an error object with status
+    if (error?.status === 404) {
       return null;
     }
-    throw error; // Re-throw other errors
+    throw error;
   }
 }
 
-/**
- * Fetches the specific court reservation associated with a tournament ID.
- * Returns null if no reservation exists or if the fetch fails with a 404.
- * Throws for other errors.
- */
 export async function getReservationByTournamentId(tournamentId: Uuid): Promise<CourtReservation | null> {
   try {
-    return await fetchJson<CourtReservation>(`${reservationsBaseUrl}/by-tournament/${tournamentId}`);
+    const reservation = await fetchJson<CourtReservation>(`${reservationsBaseUrl}/by-tournament/${tournamentId}`);
+    if (!reservation) return null;
+    return {
+      ...reservation,
+      start_reservation_datetime: displayUtcAsLocal(reservation.start_reservation_datetime),
+      end_reservation_datetime: displayUtcAsLocal(reservation.end_reservation_datetime),
+    };
   } catch (error: any) {
-    if (error?.status === 404) { // Assuming fetchJson throws an error object with status
+    if (error?.status === 404) {
       return null;
     }
-    throw error; // Re-throw other errors
+    throw error;
   }
 }

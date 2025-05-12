@@ -30,3 +30,12 @@ export async function fetchJson<T>(url: string, options: RequestInit = {}): Prom
 
   return jsonResponse
 }
+
+export async function modifyInner<T>(promise: Promise<T>, middleWare: (value: T) => T): Promise<T> {
+  try {
+    const promiseValue = await promise
+    return middleWare(promiseValue)
+  } catch (error) {
+    throw error
+  }
+}

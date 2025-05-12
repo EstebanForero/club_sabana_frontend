@@ -47,11 +47,25 @@ const UserEditDialog: React.FC<UserEditDialogProps> = ({
   });
 
   const updateMutation = useMutation({
-    mutationFn: (formData: UserEditFormData) =>
-      updateUser(
-        { ...formData, password: formData.password ?? "" },
-        userId!
-      ),
+    mutationFn: (formData: UserEditFormData) => {
+      const userCreation: UserCreation = {
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email,
+        country_code: formData.country_code,
+        identification_number: formData.identification_number,
+        identification_type: formData.identification_type,
+        birth_date: formData.birth_date,
+        phone_number: formData.phone_number,
+        password: formData.password ?? ''
+      }
+
+      return updateUser(
+        userId ?? '',
+        userCreation
+      )
+    }
+    ,
     onSuccess: (_, variables) => {
       toast.success(`User ${variables.first_name} ${variables.last_name} updated successfully!`);
       queryClient.invalidateQueries({ queryKey: ['allUsers'] });

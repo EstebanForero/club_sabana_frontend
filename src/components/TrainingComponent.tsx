@@ -12,6 +12,7 @@ import { Uuid } from '@/backend/common';
 import TrainingEdit from './TrainingEdit';
 import AdminTrainingRegistrationsDialog from './AdminTrainingRegistrationsDialog';
 import EventCourtBadge from './EventCourtBadge';
+import TrainerBadgeComponent from './TrainerBadgeComponent';
 
 type Props = {
   training: Training;
@@ -56,6 +57,7 @@ const TrainingComponent: React.FC<Props> = ({ training, enableAdminControls = fa
           <p className='flex items-center'><CalendarDays className="mr-2 h-4 w-4 text-muted-foreground" /> <span className="font-medium">Starts:</span> {formatDate(training.start_datetime)}</p>
           <p className='flex items-center'><CalendarDays className="mr-2 h-4 w-4 text-muted-foreground" /> <span className="font-medium">Ends:</span> {formatDate(training.end_datetime)}</p>
           <p className='flex items-center'><DollarSign className="mr-2 h-4 w-4 text-muted-foreground" /> <span className="font-medium">Min. Payment:</span> ${(training.minimum_payment ?? 0.0).toFixed(2)}</p>
+          <TrainerBadgeComponent trainer_id={training.trainer_id} />
         </CardContent>
         {enableAdminControls && (
           <CardFooter className="flex justify-end gap-2 flex-wrap">

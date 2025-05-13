@@ -11,6 +11,7 @@ import { Training, TrainingRegistration } from '@/backend/training_backend';
 import { formatDate } from '@/lib/utils';
 import { CalendarDays, DollarSign, CheckCircle, CalendarCheck, CalendarX } from 'lucide-react';
 import EventCourtBadge from './EventCourtBadge';
+import TrainerBadgeComponent from './TrainerBadgeComponent';
 
 interface RegisteredTrainingCardProps {
   training: Training;
@@ -41,6 +42,7 @@ const RegisteredTrainingCard: React.FC<RegisteredTrainingCardProps> = ({
           <DollarSign className="mr-2 h-4 w-4 text-gray-500" />
           <span>Min. Payment: ${training.minimum_payment?.toFixed(2) ?? 'N/A'}</span>
         </div>
+        <TrainerBadgeComponent trainer_id={training.trainer_id} />
       </CardContent>
       <CardFooter className="text-sm font-medium p-3 flex flex-col items-start space-y-1.5 bg-muted/30">
         <div className="flex items-center text-blue-600 dark:text-blue-400">

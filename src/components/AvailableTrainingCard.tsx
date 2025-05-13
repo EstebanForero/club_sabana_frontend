@@ -13,6 +13,7 @@ import { Uuid } from '@/backend/common';
 import { formatDate } from '@/lib/utils';
 import { CalendarDays, DollarSign, CheckSquare } from 'lucide-react';
 import EventCourtBadge from './EventCourtBadge';
+import TrainerBadgeComponent from './TrainerBadgeComponent';
 
 interface AvailableTrainingCardProps {
   training: Training;
@@ -53,6 +54,7 @@ const AvailableTrainingCard: React.FC<AvailableTrainingCardProps> = ({
             <DollarSign className="mr-2 h-4 w-4 text-gray-500" />
             <span>Min. Payment: ${training.minimum_payment?.toFixed(2) ?? 'N/A'}</span>
           </div>
+          <TrainerBadgeComponent trainer_id={training.trainer_id} />
         </CardContent>
       </div>
       <CardFooter className="flex justify-end pt-4">

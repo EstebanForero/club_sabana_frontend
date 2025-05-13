@@ -19,7 +19,7 @@ const profileSchema = z.object({
   last_name: z.string().min(1, { message: 'Last name is required' }),
   birth_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Birth date must be in YYYY-MM-DD format' }),
   email: z.string().email({ message: 'Invalid email address' }),
-  phone_number: z.string().min(1, { message: 'Phone number is required' }).max(2, { message: "Country code must be max 2" }),
+  phone_number: z.string().min(1, { message: 'Phone number is required' }),
   country_code: z.string().min(1, { message: 'Country code is required' }).max(2, { message: "Country code can't be longer than 2" })
     .regex(/^\d+$/, { message: 'Phone number must contain only numbers' }),
   password: z.string(),

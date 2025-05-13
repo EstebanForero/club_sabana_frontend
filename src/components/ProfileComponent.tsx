@@ -19,8 +19,9 @@ const profileSchema = z.object({
   last_name: z.string().min(1, { message: 'Last name is required' }),
   birth_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Birth date must be in YYYY-MM-DD format' }),
   email: z.string().email({ message: 'Invalid email address' }),
-  phone_number: z.string().min(1, { message: 'Phone number is required' }),
-  country_code: z.string().min(1, { message: 'Country code is required' }).max(2, { message: "Country code can't be longer than 2" }),
+  phone_number: z.string().min(1, { message: 'Phone number is required' }).max(2, { message: "Country code must be max 2" }),
+  country_code: z.string().min(1, { message: 'Country code is required' }).max(2, { message: "Country code can't be longer than 2" })
+    .regex(/^\d+$/, { message: 'Phone number must contain only numbers' }),
   password: z.string(),
   identification_number: z.string().min(1, { message: 'Identification number is required' }),
   identification_type: z.nativeEnum(IdType, { message: 'Please select an identification type' }),
@@ -32,7 +33,7 @@ const fields: FormFieldConfig[] = [
   { name: 'birth_date', label: 'Birth Date', type: 'date' },
   { name: 'email', label: 'Email', type: 'email', placeholder: 'Email' },
   { name: 'phone_number', label: 'Phone Number', type: 'tel', placeholder: 'Phone Number' },
-  { name: 'country_code', label: 'Country Code', placeholder: 'Country Code (e.g., US)' },
+  { name: 'country_code', label: 'Country Code', placeholder: 'Country Code (e.g., 57)' },
   { name: 'password', label: 'Password', type: 'password', placeholder: 'Password' },
   {
     name: 'identification_type',
@@ -53,7 +54,7 @@ const ProfileComponent: React.FC<ProfileComponentProps> = ({ userId, userRol }) 
   });
 
   const updateMutation = useMutation({
-    mutationFn: (updatedUser: UserCreation) => updateUser(updatedUser, userId),
+    mutationFn: (updatedUser: UserCreation) => updateUser(userId, updatedUser),
     onSuccess: () => {
       queryClient.invalidateQueries(['user', userId]);
       toast.success('Profile updated successfully');

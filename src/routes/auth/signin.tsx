@@ -33,7 +33,7 @@ const fields: FormFieldConfig[] = [
   { name: 'birth_date', label: 'Birth Date', type: 'date' },
   { name: 'email', label: 'Email', type: 'email', placeholder: 'Email' },
   { name: 'phone_number', label: 'Phone Number', type: 'tel', placeholder: 'Phone Number' },
-  { name: 'country_code', label: 'Country Code', placeholder: 'Country Code (e.g., US)' },
+  { name: 'country_code', label: 'Country Code', placeholder: 'Country Code (e.g., 57)' },
   { name: 'password', label: 'Password', type: 'password', placeholder: 'Password' },
   {
     name: 'identification_type',

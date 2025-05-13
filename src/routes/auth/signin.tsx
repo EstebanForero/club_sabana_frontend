@@ -54,6 +54,7 @@ function RouteComponent() {
       toast.success('User registered successfully');
       navigate({ to: '/auth/login' });
     } catch (error) {
+      toast.error(`Error registering user: ${error}`)
       throw new Error(error instanceof Error ? error.message : 'Registration failed');
     }
   };

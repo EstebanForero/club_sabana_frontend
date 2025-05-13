@@ -33,7 +33,14 @@ const RequestVisualizer = ({ request, admin }: Props) => {
         <CardDescription>Requested by: {requesterInfo.email}</CardDescription>
       </CardHeader>
       <CardContent>
-        {request.justification}
+        <div className='py-2'>
+          {request.justification}
+        </div>
+        <div>
+          <strong>
+            Request id: {request.request_id}
+          </strong>
+        </div>
       </CardContent>
       <CardFooter>
         {request.approved !== null ? <ApprovedBadge approved={request.approved} approver_id={request.approver_id ?? ''} /> :
